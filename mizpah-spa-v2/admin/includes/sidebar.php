@@ -1,6 +1,6 @@
 <div class="sidebar">
 
-  <h2>MIS Admin</h2>
+  <h2>Admin</h2>
 
   <a href="dashboard.php">Dashboard</a>
   <a href="bookings.php">Bookings</a>

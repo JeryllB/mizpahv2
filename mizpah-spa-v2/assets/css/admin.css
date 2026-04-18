@@ -6,154 +6,167 @@
 
 body{
   font-family:'Poppins', sans-serif;
-  background:#0f0f0f;
-  color:#fff;
+  background:#0D0D0D;
+  color:#F8F5F0;
 }
 
-/* =========================
-   SIDEBAR (FIXED - NO DISAPPEAR)
-========================= */
+/* ================= SIDEBAR ================= */
 .sidebar{
-  width:220px;
+  width:230px;
   height:100vh;
-  background:#111;
-  color:#fff;
-  padding:20px;
+  background:#111111;
+  border-right:1px solid #D6C29C;
   position:fixed;
-  left:0;
   top:0;
-  z-index:1000;
-  border-right:1px solid rgba(212,175,55,.25);
+  left:0;
+  padding:25px 18px;
+  overflow-y:auto;
 }
 
 .sidebar h2{
-  color:#D4AF37;
   font-family:'Playfair Display', serif;
-  margin-bottom:20px;
+  color:#D6C29C;
+  font-size:24px;
+  margin-bottom:25px;
 }
 
 .sidebar a{
   display:block;
-  color:#fff;
+  color:#F8F5F0;
   text-decoration:none;
-  padding:10px;
-  margin:8px 0;
-  border-radius:6px;
+  padding:12px 14px;
+  margin-bottom:8px;
+  border-radius:8px;
   transition:.3s;
 }
 
 .sidebar a:hover{
-  background:#D4AF37;
-  color:#111;
+  background:#D6C29C;
+  color:#0D0D0D;
 }
 
-/* =========================
-   MAIN (IMPORTANT FIX)
-========================= */
+/* ================= MAIN ================= */
 .main{
-  margin-left:220px;
-  padding:30px;
+  margin-left:230px;
+  padding:35px;
 }
 
-/* =========================
-   HEADINGS
-========================= */
 h1,h2,h3{
-  color:#D4AF37;
   font-family:'Playfair Display', serif;
+  color:#D6C29C;
+  margin-bottom:10px;
 }
 
 p{
-  color:#ddd;
+  color:#CFCFCF;
+  margin-bottom:15px;
 }
 
-/* =========================
-   CARDS
-========================= */
+/* ================= CARDS ================= */
 .cards{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:15px;
+  gap:18px;
   margin-bottom:25px;
 }
 
 .card{
-  background:#181818;
-  padding:20px;
-  border-radius:12px;
-  border:1px solid rgba(212,175,55,.15);
+  background:#171717;
+  border:1px solid rgba(214,194,156,.25);
+  border-radius:14px;
+  padding:22px;
 }
 
-/* =========================
-   TABLE
-========================= */
+.card p{
+  font-size:24px;
+  color:#F8F5F0;
+  font-weight:700;
+}
+
+/* ================= TABLE ================= */
 .table{
   width:100%;
   border-collapse:collapse;
-  background:#181818;
-  margin-top:15px;
-  border-radius:10px;
+  background:#171717;
+  border-radius:14px;
   overflow:hidden;
 }
 
 .table th{
-  background:#111;
-  color:#D4AF37;
-  padding:12px;
+  background:#D6C29C;
+  color:#0D0D0D;
+  padding:14px;
   text-align:left;
 }
 
 .table td{
-  padding:12px;
-  border-bottom:1px solid #2a2a2a;
-  color:#ddd;
+  padding:14px;
+  border-bottom:1px solid #2A2A2A;
+  vertical-align:middle;
 }
 
 .table tr:hover{
-  background:#1f1f1f;
+  background:#1F1F1F;
 }
 
-/* =========================
-   BUTTONS
-========================= */
+/* ================= BOOKING FORM ================= */
+.table form{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+select{
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #8E7C68;
+  background:#111111;
+  color:#F8F5F0;
+  min-width:140px;
+}
+
+.update-btn,
 .btn,
-.update-btn{
-  background:#D4AF37;
-  color:#111;
+button{
+  background:#D6C29C;
+  color:#0D0D0D;
   border:none;
-  padding:8px 12px;
-  border-radius:6px;
+  padding:10px 14px;
+  border-radius:8px;
   font-weight:600;
   cursor:pointer;
-  text-decoration:none;
-  display:inline-block;
-  transition:.3s;
 }
 
+.update-btn:hover,
 .btn:hover,
-.update-btn:hover{
-  background:#fff;
+button:hover{
+  background:#F8F5F0;
 }
 
-/* =========================
-   SELECT
-========================= */
-select{
-  padding:6px;
-  background:#111;
-  color:#fff;
-  border:1px solid #333;
-  border-radius:6px;
+/* ================= STATUS COLORS ================= */
+.pending{
+  color:#f5b041;
 }
 
-/* =========================
-   CALENDAR (SAFE FIX)
-========================= */
+.confirmed{
+  color:#58d68d;
+}
+
+.completed{
+  color:#85c1e9;
+}
+
+.cancelled{
+  color:#ec7063;
+}
+
+/* ================= CALENDAR ================= */
 .calendar-box{
-  background:#181818;
+  background:#171717;
+  border:1px solid rgba(214,194,156,.18);
+  border-radius:16px;
   padding:20px;
-  border-radius:12px;
-  border:1px solid rgba(212,175,55,.15);
 }
 
 .calendar-table{
@@ -163,70 +176,89 @@ select{
 }
 
 .calendar-table th{
-  background:#111;
-  color:#D4AF37;
+  background:#D6C29C;
+  color:#0D0D0D;
   padding:10px;
   border-radius:8px;
 }
 
 .calendar-table td{
-  background:#1a1a1a;
-  height:80px;
-  padding:8px;
+  background:#1B1B1B;
+  color:#F8F5F0;
+  height:90px;
+  vertical-align:top;
+  padding:10px;
   border-radius:10px;
-  color:#fff;
-  border:1px solid rgba(212,175,55,.1);
+  transition:.3s;
 }
 
 .calendar-table td:hover{
-  border:1px solid #D4AF37;
+  background:#232323;
 }
 
-/* BOOKED */
 .calendar-table td.booked{
-  background:#D4AF37;
-  color:#111;
+  background:#8E7C68;
+  color:#FFFFFF;
 }
 
-/* =========================
-   MODAL (FIXED X BUTTON)
-========================= */
+.num{
+  font-weight:700;
+}
+
+.badge{
+  display:inline-block;
+  margin-top:6px;
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:20px;
+  background:#D6C29C;
+  color:#0D0D0D;
+}
+
+/* ================= MODAL ================= */
 .modal{
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.75);
-  z-index:9999;
+  background:rgba(0,0,0,.7);
+  z-index:999;
 }
 
 .modal-content{
-  background:#181818;
+  background:#171717;
   width:90%;
-  max-width:420px;
-  margin:10% auto;
-  padding:25px;
-  border-radius:12px;
-  border:1px solid #D4AF37;
+  max-width:480px;
+  margin:6% auto;
+  padding:28px;
+  border-radius:16px;
   position:relative;
-  text-align:center;
+  border:1px solid #D6C29C;
 }
 
 .close{
   position:absolute;
   top:10px;
-  right:15px;
+  right:14px;
   font-size:28px;
-  color:#D4AF37;
+  color:#D6C29C;
   cursor:pointer;
 }
 
-.close:hover{
-  color:#fff;
+/* ================= REPORTS ================= */
+.report-box,
+.report-card,
+canvas{
+  background:#171717 !important;
+  border:1px solid rgba(214,194,156,.18);
+  border-radius:16px;
+  padding:20px;
 }
 
-/* =========================
-   MOBILE SAFE
-========================= */
+canvas{
+  max-width:100%;
+}
+
+/* ================= MOBILE ================= */
 @media(max-width:768px){
 
 .sidebar{
@@ -237,9 +269,21 @@ select{
 
 .main{
   margin-left:0;
+  padding:20px;
 }
 
 .cards{
   grid-template-columns:1fr;
 }
+
+.table{
+  display:block;
+  overflow-x:auto;
+}
+
+.table form{
+  flex-direction:column;
+  align-items:flex-start;
+}
+
 }
