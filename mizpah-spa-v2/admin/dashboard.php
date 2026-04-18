@@ -1,195 +1,112 @@
 <?php
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 include '../includes/db.php';
 
-/* =========================
-   KPI DATA
-========================= */
-
-$bookingsQuery = mysqli_query($conn, "SELECT COUNT(*) as total FROM bookings");
-$bookings = mysqli_fetch_assoc($bookingsQuery)['total'] ?? 0;
-
-$pendingQuery = mysqli_query($conn, "SELECT COUNT(*) as total FROM bookings WHERE status='Pending'");
-$pending = mysqli_fetch_assoc($pendingQuery)['total'] ?? 0;
-
-$completedQuery = mysqli_query($conn, "SELECT COUNT(*) as total FROM bookings WHERE status='Completed'");
-$completed = mysqli_fetch_assoc($completedQuery)['total'] ?? 0;
-
-$revenueQuery = mysqli_query($conn, "SELECT SUM(price) as total FROM bookings");
-$revenue = mysqli_fetch_assoc($revenueQuery)['total'] ?? 0;
-
-/* =========================
-   CALENDAR DATA
-========================= */
-
-$calendarQuery = mysqli_query($conn, "
-  SELECT booking_date, COUNT(*) as total
-  FROM bookings
-  GROUP BY booking_date
-");
-
-$calendarData = [];
-
-while($row = mysqli_fetch_assoc($calendarQuery)) {
-    $calendarData[$row['booking_date']] = $row['total'];
+if(!isset($_SESSION['user_id'])){
+    header("Location: ../login.php");
+    exit;
 }
 
-/* =========================
-   RECENT BOOKINGS
-========================= */
+/* KPI */
+$bookings = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM bookings"))['total'] ?? 0;
 
-$recent = mysqli_query($conn, "
-    SELECT * FROM bookings 
-    ORDER BY id DESC 
-    LIMIT 5
+$revenue = mysqli_fetch_assoc(mysqli_query($conn,"SELECT SUM(price) total FROM bookings"))['total'] ?? 0;
+
+$pending = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM bookings WHERE status='Pending'"))['total'] ?? 0;
+
+$completed = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM bookings WHERE status='Completed'"))['total'] ?? 0;
+
+/* GRAPH DATA (LAST 7 DAYS) */
+$graph = mysqli_query($conn,"
+SELECT DATE(booking_date) as date, COUNT(*) as total
+FROM bookings
+GROUP BY DATE(booking_date)
+ORDER BY date DESC
+LIMIT 7
 ");
 
-/* =========================
-   THERAPISTS
-========================= */
+$labels = [];
+$data = [];
 
-$therapists = mysqli_query($conn, "SELECT * FROM therapists");
+while($row = mysqli_fetch_assoc($graph)){
+    $labels[] = $row['date'];
+    $data[] = $row['total'];
+}
+
+$labels = array_reverse($labels);
+$data = array_reverse($data);
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="../assets/css/admin.css">
+<title>Dashboard</title>
+
+<link rel="stylesheet" href="../assets/css/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+.chart-box{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  margin-top:20px;
+}
+</style>
+
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
-<!-- MAIN -->
 <div class="main">
 
-  <h1>Admin Dashboard</h1>
-  <p>Welcome back, Admin 👋</p>
+<h1>Admin Dashboard</h1>
 
-  <!-- KPI CARDS -->
-  <div class="cards">
+<!-- KPI -->
+<div class="cards">
 
-    <div class="card">
-      <h3>Bookings</h3>
-      <p><?php echo $bookings; ?></p>
-    </div>
-
-    <div class="card">
-      <h3>Pending</h3>
-      <p><?php echo $pending; ?></p>
-    </div>
-
-    <div class="card">
-      <h3>Completed</h3>
-      <p><?php echo $completed; ?></p>
-    </div>
-
-    <div class="card">
-      <h3>Revenue</h3>
-      <p>₱<?php echo number_format($revenue ?? 0, 2); ?></p>
-    </div>
-
-  </div>
-
-  <!-- CALENDAR -->
-  <h2>Booking Calendar</h2>
-
-  <div class="calendar-box">
-
-    <p><strong>This Month:</strong> <?= date('F Y') ?></p>
-
-    <div class="calendar-grid">
-
-      <?php
-      $daysInMonth = date('t');
-      $month = date('m');
-      $year = date('Y');
-
-      for ($day = 1; $day <= $daysInMonth; $day++) {
-
-          $date = $year . "-" . $month . "-" . str_pad($day, 2, "0", STR_PAD_LEFT);
-
-          $count = $calendarData[$date] ?? 0;
-
-          if ($count > 0) {
-              echo "<div class='day booked'>$day</div>";
-          } else {
-              echo "<div class='day available'>$day</div>";
-          }
-      }
-      ?>
-
-    </div>
-  </div>
-
-  <!-- RECENT BOOKINGS -->
-  <h2 style="margin-top:30px;">Recent Bookings</h2>
-
-  <table class="table">
-
-    <tr>
-      <th>Customer</th>
-      <th>Service</th>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Status</th>
-    </tr>
-
-    <?php if(mysqli_num_rows($recent) > 0): ?>
-      <?php while($row = mysqli_fetch_assoc($recent)) { ?>
-        <tr>
-          <td><?php echo $row['customer_name']; ?></td>
-          <td><?php echo $row['service']; ?></td>
-          <td><?php echo $row['booking_date']; ?></td>
-          <td><?php echo $row['booking_time']; ?></td>
-          <td><?php echo $row['status']; ?></td>
-        </tr>
-      <?php } ?>
-    <?php else: ?>
-      <tr>
-        <td colspan="5">No bookings yet</td>
-      </tr>
-    <?php endif; ?>
-
-  </table>
-
-  <!-- THERAPIST SECTION (FIXED OUTSIDE TABLE) -->
-  <h2 style="margin-top:40px;">Therapist Overview</h2>
-
-  <div class="cards">
-
-    <?php while($t = mysqli_fetch_assoc($therapists)) { ?>
-
-      <?php
-        $tid = $t['id'];
-
-        $countQuery = mysqli_query($conn, "
-            SELECT COUNT(*) as total 
-            FROM bookings 
-            WHERE therapist_id = $tid
-        ");
-
-        $served = mysqli_fetch_assoc($countQuery)['total'] ?? 0;
-      ?>
-
-      <div class="card">
-          <h3><?php echo $t['name']; ?></h3>
-          <p><?php echo $t['specialization']; ?></p>
-          <p><strong>Clients Served:</strong> <?php echo $served; ?></p>
-          <p>Status: <?php echo $t['status']; ?></p>
-      </div>
-
-    <?php } ?>
-
-  </div>
+<div class="card"><h3>Bookings</h3><p><?= $bookings ?></p></div>
+<div class="card"><h3>Pending</h3><p><?= $pending ?></p></div>
+<div class="card"><h3>Completed</h3><p><?= $completed ?></p></div>
+<div class="card"><h3>Revenue</h3><p>₱<?= number_format($revenue,2) ?></p></div>
 
 </div>
+
+<!-- GRAPH -->
+<div class="chart-box">
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
+<script>
+const ctx = document.getElementById('chart');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: <?= json_encode($labels) ?>,
+        datasets: [{
+            label: 'Bookings (Last 7 Days)',
+            data: <?= json_encode($data) ?>,
+            borderColor: '#C89B6A',
+            backgroundColor: 'rgba(200,155,106,0.2)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true
+            }
+        }
+    }
+});
+</script>
 
 </body>
 </html>

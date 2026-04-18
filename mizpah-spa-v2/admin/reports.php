@@ -2,116 +2,242 @@
 session_start();
 include '../includes/db.php';
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+/* SECURITY CHECK */
+if(!isset($_SESSION['user_id'])){
+    header("Location: ../login.php");
+    exit;
+}
+
+/* FILTER */
+$from = $_GET['from'] ?? '';
+$to = $_GET['to'] ?? '';
+
+$where = "";
+
+if(!empty($from) && !empty($to)){
+    $where = "WHERE booking_date BETWEEN '$from' AND '$to'";
+}
+
 /* =========================
-   REVENUE
+   REVENUE DATA
 ========================= */
 
-// DAILY REVENUE
-$dailyQuery = mysqli_query($conn, "
-  SELECT SUM(price) as total 
-  FROM bookings 
-  WHERE DATE(booking_date) = CURDATE()
-");
-$daily = mysqli_fetch_assoc($dailyQuery)['total'] ?? 0;
+$daily = mysqli_fetch_assoc(mysqli_query($conn,"
+SELECT SUM(price) total 
+FROM bookings 
+WHERE DATE(booking_date) = CURDATE()
+"))['total'] ?? 0;
 
-// MONTHLY REVENUE
-$monthlyQuery = mysqli_query($conn, "
-  SELECT SUM(price) as total 
-  FROM bookings 
-  WHERE MONTH(booking_date) = MONTH(CURDATE())
-");
-$monthly = mysqli_fetch_assoc($monthlyQuery)['total'] ?? 0;
+$monthly = mysqli_fetch_assoc(mysqli_query($conn,"
+SELECT SUM(price) total 
+FROM bookings 
+WHERE MONTH(booking_date) = MONTH(CURDATE())
+"))['total'] ?? 0;
+
+$totalRevenue = mysqli_fetch_assoc(mysqli_query($conn,"
+SELECT SUM(price) total 
+FROM bookings
+"))['total'] ?? 0;
 
 /* =========================
-   BOOKING STATUS
+   STATUS COUNT
 ========================= */
 
-$statusQuery = mysqli_query($conn, "
-  SELECT status, COUNT(*) as total
-  FROM bookings
-  GROUP BY status
+$status = mysqli_query($conn,"
+SELECT status, COUNT(*) as total
+FROM bookings
+GROUP BY status
 ");
 
 /* =========================
    TOP SERVICES
 ========================= */
 
-$serviceQuery = mysqli_query($conn, "
-  SELECT service, COUNT(*) as total
-  FROM bookings
-  GROUP BY service
-  ORDER BY total DESC
-  LIMIT 5
+$services = mysqli_query($conn,"
+SELECT service, COUNT(*) as total
+FROM bookings
+GROUP BY service
+ORDER BY total DESC
+LIMIT 5
 ");
+
+/* =========================
+   MONTHLY BOOKINGS
+========================= */
+
+$monthlyBookings = mysqli_fetch_assoc(mysqli_query($conn,"
+SELECT COUNT(*) total
+FROM bookings
+WHERE MONTH(booking_date) = MONTH(CURDATE())
+"))['total'] ?? 0;
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Reports - MIS Admin</title>
-  <link rel="stylesheet" href="../assets/css/admin.css">
+<title>Reports</title>
+
+<link rel="stylesheet" href="../assets/css/admin.css">
+
+<style>
+:root {
+  --dark: #4B2E2A;
+  --brown: #C89B6A;
+  --beige: #f5f2ee;
+}
+
+body {
+  background: var(--beige);
+}
+
+/* CARDS */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* TABLE */
+.table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.table th {
+  background: var(--dark);
+  color: white;
+  padding: 12px;
+}
+
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+/* BUTTONS */
+button {
+  padding: 8px 12px;
+  background: #C89B6A;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+input {
+  padding: 6px;
+  margin-right: 5px;
+}
+
+/* PRINT */
+@media print {
+  button, form {
+    display: none;
+  }
+}
+</style>
+
 </head>
 
 <body>
 
-<?php include 'includes/sidebar.php'; ?>
-</div>
+<?php include __DIR__ . '/includes/sidebar.php'; ?>
 
 <div class="main">
 
-  <h1>Reports & Analytics</h1>
-  <p>Business Overview Dashboard</p>
+<h1>Reports & Analytics</h1>
+<p>Business performance overview</p>
 
-  <!-- KPI REPORT CARDS -->
-  <div class="cards">
+<!-- FILTER + PRINT -->
+<form method="GET" style="margin-bottom:10px;">
+  <input type="date" name="from" value="<?= $from ?>">
+  <input type="date" name="to" value="<?= $to ?>">
+  <button type="submit">Filter</button>
+</form>
 
-    <div class="card">
-      <h3>Daily Revenue</h3>
-      <p>₱<?php echo number_format($daily ?? 0, 2); ?></p>
-    </div>
+<button onclick="window.print()">Print Report</button>
 
-    <div class="card">
-      <h3>Monthly Revenue</h3>
-      <p>₱<?php echo number_format($monthly ?? 0, 2); ?></p>
-    </div>
+<!-- KPI CARDS -->
+<div class="cards">
 
+  <div class="card">
+    <h3>Daily Revenue</h3>
+    <p>₱<?= number_format($daily,2) ?></p>
   </div>
 
-  <!-- BOOKING STATUS -->
-  <h2 style="margin-top:30px;">Booking Status</h2>
+  <div class="card">
+    <h3>Monthly Revenue</h3>
+    <p>₱<?= number_format($monthly,2) ?></p>
+  </div>
 
-  <table class="table">
-    <tr>
-      <th>Status</th>
-      <th>Total</th>
-    </tr>
+  <div class="card">
+    <h3>Total Revenue</h3>
+    <p>₱<?= number_format($totalRevenue,2) ?></p>
+  </div>
 
-    <?php while($row = mysqli_fetch_assoc($statusQuery)) { ?>
-      <tr>
-        <td><?php echo $row['status']; ?></td>
-        <td><?php echo $row['total']; ?></td>
-      </tr>
-    <?php } ?>
+  <div class="card">
+    <h3>Monthly Bookings</h3>
+    <p><?= $monthlyBookings ?></p>
+  </div>
 
-  </table>
+</div>
 
-  <!-- TOP SERVICES -->
-  <h2 style="margin-top:30px;">Top Services</h2>
+<!-- STATUS -->
+<h2>Booking Status</h2>
 
-  <table class="table">
-    <tr>
-      <th>Service</th>
-      <th>Bookings</th>
-    </tr>
+<table class="table">
 
-    <?php while($row = mysqli_fetch_assoc($serviceQuery)) { ?>
-      <tr>
-        <td><?php echo $row['service']; ?></td>
-        <td><?php echo $row['total']; ?></td>
-      </tr>
-    <?php } ?>
+<tr>
+<th>Status</th>
+<th>Total</th>
+</tr>
 
-  </table>
+<?php while($row = mysqli_fetch_assoc($status)) { ?>
+
+<tr>
+<td><?= $row['status'] ?></td>
+<td><?= $row['total'] ?></td>
+</tr>
+
+<?php } ?>
+
+</table>
+
+<!-- TOP SERVICES -->
+<h2 style="margin-top:30px;">Top Services</h2>
+
+<table class="table">
+
+<tr>
+<th>Service</th>
+<th>Bookings</th>
+</tr>
+
+<?php while($row = mysqli_fetch_assoc($services)) { ?>
+
+<tr>
+<td><?= $row['service'] ?></td>
+<td><?= $row['total'] ?></td>
+</tr>
+
+<?php } ?>
+
+</table>
 
 </div>
 
