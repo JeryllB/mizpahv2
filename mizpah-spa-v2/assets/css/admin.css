@@ -5,60 +5,71 @@
 }
 
 body{
-  font-family:Arial, sans-serif;
-  background:#F5F1EB;
-  color:#3E3A36;
-  overflow-x:hidden;
+  font-family:'Poppins', sans-serif;
+  background:#0f0f0f;
+  color:#fff;
 }
 
-/* SIDEBAR */
+/* =========================
+   SIDEBAR (FIXED - NO DISAPPEAR)
+========================= */
 .sidebar{
   width:220px;
   height:100vh;
-  background:#3B2A22;
+  background:#111;
   color:#fff;
   padding:20px;
   position:fixed;
   left:0;
   top:0;
+  z-index:1000;
+  border-right:1px solid rgba(212,175,55,.25);
 }
 
 .sidebar h2{
-  margin-bottom:25px;
-  color:#F5F1EB;
+  color:#D4AF37;
+  font-family:'Playfair Display', serif;
+  margin-bottom:20px;
 }
 
 .sidebar a{
   display:block;
-  color:white;
+  color:#fff;
   text-decoration:none;
-  margin:10px 0;
   padding:10px;
+  margin:8px 0;
   border-radius:6px;
-  transition:0.3s;
+  transition:.3s;
 }
 
 .sidebar a:hover{
-  background:#C89B6A;
+  background:#D4AF37;
+  color:#111;
 }
 
-/* MAIN */
+/* =========================
+   MAIN (IMPORTANT FIX)
+========================= */
 .main{
-  margin-left:240px;
+  margin-left:220px;
   padding:30px;
-  width:calc(100% - 240px);
 }
 
-/* HEADINGS */
+/* =========================
+   HEADINGS
+========================= */
 h1,h2,h3{
-  color:#3B2A22;
+  color:#D4AF37;
+  font-family:'Playfair Display', serif;
 }
 
 p{
-  color:#5B5550;
+  color:#ddd;
 }
 
-/* CARDS */
+/* =========================
+   CARDS
+========================= */
 .cards{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -67,143 +78,155 @@ p{
 }
 
 .card{
-  background:#fff;
+  background:#181818;
   padding:20px;
   border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,.08);
+  border:1px solid rgba(212,175,55,.15);
 }
 
-.card p{
-  font-size:22px;
-  font-weight:bold;
-  color:#A67C52;
-}
-
-/* TABLE */
+/* =========================
+   TABLE
+========================= */
 .table{
   width:100%;
   border-collapse:collapse;
-  background:#fff;
-  border-radius:12px;
-  overflow:hidden;
+  background:#181818;
   margin-top:15px;
+  border-radius:10px;
+  overflow:hidden;
 }
 
 .table th{
-  background:#6B5B4D;
-  color:#fff;
+  background:#111;
+  color:#D4AF37;
   padding:12px;
   text-align:left;
 }
 
 .table td{
   padding:12px;
-  border-bottom:1px solid #eee;
+  border-bottom:1px solid #2a2a2a;
+  color:#ddd;
 }
 
 .table tr:hover{
-  background:#F7F4F0;
+  background:#1f1f1f;
 }
 
-/* BUTTON (GENERAL) */
-.btn{
-  display:inline-block;
-  padding:7px 10px;
-  background:#A67C52;
-  color:#fff;
-  border-radius:5px;
-  font-size:12px;
-}
-
-.btn:hover{
-  background:#3B2A22;
-}
-
-/* UPDATE BUTTON (FIXED GLOBAL - IMPORTANT) */
+/* =========================
+   BUTTONS
+========================= */
+.btn,
 .update-btn{
-  background:#C89B6A;
-  color:white;
+  background:#D4AF37;
+  color:#111;
   border:none;
-  padding:10px 16px;
-  border-radius:8px;
+  padding:8px 12px;
+  border-radius:6px;
+  font-weight:600;
   cursor:pointer;
-  font-size:14px;
-  font-weight:bold;
-  transition:0.3s ease;
+  text-decoration:none;
+  display:inline-block;
+  transition:.3s;
 }
 
+.btn:hover,
 .update-btn:hover{
-  background:#3B2A22;
-  transform:scale(1.05);
+  background:#fff;
 }
 
-.update-btn:active{
-  transform:scale(0.98);
-}
-
-/* SELECT */
+/* =========================
+   SELECT
+========================= */
 select{
   padding:6px;
+  background:#111;
+  color:#fff;
+  border:1px solid #333;
   border-radius:6px;
-  border:1px solid #ccc;
-  background:white;
 }
 
-/* CALENDAR */
+/* =========================
+   CALENDAR (SAFE FIX)
+========================= */
 .calendar-box{
-  background:#fff;
+  background:#181818;
   padding:20px;
   border-radius:12px;
+  border:1px solid rgba(212,175,55,.15);
 }
 
 .calendar-table{
   width:100%;
   border-collapse:separate;
   border-spacing:8px;
-  margin-top:15px;
 }
 
 .calendar-table th{
-  background:#3B2A22;
-  color:#fff;
+  background:#111;
+  color:#D4AF37;
   padding:10px;
   border-radius:8px;
 }
 
 .calendar-table td{
-  background:#E8E1DA;
+  background:#1a1a1a;
   height:80px;
-  vertical-align:top;
-  border-radius:10px;
   padding:8px;
-  cursor:pointer;
-  transition:0.2s;
+  border-radius:10px;
+  color:#fff;
+  border:1px solid rgba(212,175,55,.1);
 }
 
 .calendar-table td:hover{
-  transform:scale(1.03);
+  border:1px solid #D4AF37;
 }
 
+/* BOOKED */
 .calendar-table td.booked{
-  background:#A67C52;
+  background:#D4AF37;
+  color:#111;
+}
+
+/* =========================
+   MODAL (FIXED X BUTTON)
+========================= */
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  z-index:9999;
+}
+
+.modal-content{
+  background:#181818;
+  width:90%;
+  max-width:420px;
+  margin:10% auto;
+  padding:25px;
+  border-radius:12px;
+  border:1px solid #D4AF37;
+  position:relative;
+  text-align:center;
+}
+
+.close{
+  position:absolute;
+  top:10px;
+  right:15px;
+  font-size:28px;
+  color:#D4AF37;
+  cursor:pointer;
+}
+
+.close:hover{
   color:#fff;
 }
 
-.num{
-  font-weight:bold;
-}
-
-.badge{
-  margin-top:5px;
-  font-size:11px;
-  background:#fff;
-  color:#3B2A22;
-  padding:2px 6px;
-  border-radius:10px;
-  display:inline-block;
-}
-
-/* MOBILE */
+/* =========================
+   MOBILE SAFE
+========================= */
 @media(max-width:768px){
 
 .sidebar{
@@ -214,21 +237,9 @@ select{
 
 .main{
   margin-left:0;
-  width:100%;
 }
 
 .cards{
   grid-template-columns:1fr;
 }
-}
-
-/* PRINT */
-@media print{
-  .sidebar, button, form{
-    display:none;
-  }
-
-  .main{
-    margin:0;
-  }
 }
