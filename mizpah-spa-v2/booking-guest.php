@@ -2,18 +2,20 @@
 session_start();
 include 'includes/db.php';
 
+/* ================= BOOKING ================= */
 if(isset($_POST['submit_booking'])){
 
 $name    = mysqli_real_escape_string($conn,$_POST['customer_name']);
 $phone   = mysqli_real_escape_string($conn,$_POST['phone']);
 $service = mysqli_real_escape_string($conn,$_POST['service']);
 $duration= mysqli_real_escape_string($conn,$_POST['duration']);
+$price   = mysqli_real_escape_string($conn,$_POST['price']);
 $date    = mysqli_real_escape_string($conn,$_POST['booking_date']);
 $time    = mysqli_real_escape_string($conn,$_POST['booking_time']);
 $pax     = mysqli_real_escape_string($conn,$_POST['pax']);
 $notes   = mysqli_real_escape_string($conn,$_POST['notes']);
 
-/* 6 BEDS CHECK */
+/* 6 BED LIMIT */
 $check = mysqli_query($conn,"
 SELECT COUNT(*) as total 
 FROM bookings 
@@ -29,9 +31,9 @@ exit;
 
 /* INSERT */
 mysqli_query($conn,"INSERT INTO bookings
-(customer_name,phone,service,booking_date,booking_time,pax,notes,status)
+(customer_name,phone,service,duration,price,booking_date,booking_time,pax,notes,status)
 VALUES
-('$name','$phone','$service - $duration','$date','$time','$pax','$notes','Pending')");
+('$name','$phone','$service','$duration','$price','$date','$time','$pax','$notes','Pending')");
 
 echo "<script>alert('Booking Successful!');window.location='booking-guest.php';</script>";
 exit;
@@ -43,73 +45,132 @@ exit;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Mizpah Booking</title>
+<title>Mizpah Wellness Spa</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-body{margin:0;font-family:Poppins;background:#0b0b0b;color:#fff;}
-header{display:flex;justify-content:space-between;padding:18px 8%;background:#111;border-bottom:1px solid #333;}
-.logo{color:#D6C29C;font-weight:700;font-size:22px;}
-nav a{color:#fff;margin-left:15px;text-decoration:none;}
-nav a:hover{color:#D6C29C;}
 
-.hero{text-align:center;padding:40px;}
-.hero h1{color:#D6C29C;}
-
-.section{padding:20px 8%;}
-.title{color:#D6C29C;font-size:22px;margin-bottom:10px;}
-
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
-
-.card{
-background:#141414;
-padding:15px;
-border-radius:12px;
-border:1px solid #222;
-cursor:pointer;
+:root{
+--bg:#0b0b0b;
+--card:#161616;
+--gold:#D6C29C;
+--border:rgba(214,194,156,.2);
 }
 
-.card:hover{border-color:#D6C29C;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins;}
 
-.price{color:#D6C29C;margin-top:6px;}
+body{background:var(--bg);color:#fff;}
 
-.desc{font-size:12px;color:#ccc;margin-top:5px;}
+header{
+display:flex;
+justify-content:space-between;
+padding:18px 8%;
+background:#111;
+border-bottom:1px solid var(--border);
+position:sticky;
+top:0;
+z-index:10;
+}
+
+.logo{
+font-family:'Playfair Display';
+color:var(--gold);
+font-size:22px;
+font-weight:700;
+}
+
+nav a{color:#fff;margin-left:15px;text-decoration:none;}
+nav a:hover{color:var(--gold);}
+
+.hero{
+text-align:center;
+padding:40px 8%;
+}
+
+.hero h1{
+font-family:'Playfair Display';
+color:var(--gold);
+font-size:40px;
+}
+
+.section{padding:25px 8%;}
+
+.title{
+font-family:'Playfair Display';
+color:var(--gold);
+font-size:22px;
+margin-bottom:15px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:15px;
+}
+
+.card{
+background:var(--card);
+padding:18px;
+border-radius:12px;
+border:1px solid var(--border);
+cursor:pointer;
+transition:.25s;
+}
+
+.card:hover{
+transform:translateY(-4px);
+border-color:var(--gold);
+}
+
+.desc{font-size:13px;color:#cfcfcf;margin-top:6px;}
+.price{color:var(--gold);margin-top:8px;font-weight:700;}
 
 .form-box{
 background:#141414;
-padding:20px;
-border-radius:12px;
+padding:25px;
+border-radius:14px;
 max-width:900px;
 margin:auto;
-border:1px solid #222;
+border:1px solid var(--border);
+}
+
+label{
+font-size:13px;
+color:var(--gold);
+display:block;
+margin-top:12px;
 }
 
 input,select,textarea{
 width:100%;
 padding:10px;
 margin-top:6px;
-background:#0e0e0e;
-border:1px solid #333;
-color:#fff;
 border-radius:8px;
+border:1px solid #2a2a2a;
+background:#0e0e0e;
+color:#fff;
 }
 
-label{color:#D6C29C;font-size:13px;}
-
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.row{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+}
 
 button{
 width:100%;
 padding:14px;
-background:#D6C29C;
+background:var(--gold);
 border:none;
-font-weight:700;
 border-radius:10px;
-margin-top:10px;
+font-weight:700;
+margin-top:15px;
+cursor:pointer;
 }
 
-.addons label{display:block;margin:5px 0;font-size:13px;}
+button:hover{opacity:.9;}
+
 </style>
 </head>
 
@@ -127,132 +188,136 @@ margin-top:10px;
 <h1>Book Your Relaxation</h1>
 </div>
 
-<!-- SERVICES -->
-<!-- SERVICES -->
 <div class="section">
-<div class="title">Choose Your Service</div>
+<div class="title">Services</div>
 
 <div class="grid">
 
-<div class="card" onclick="setService('Swedish Massage')">
+<div class="card" onclick="setService('Swedish Massage',600,850,1150)">
 Swedish Massage
-<div class="desc">Gentle, soothing massage for stress relief and relaxation.</div>
+<div class="desc">Relaxing full body massage</div>
+<div class="price">Starts at ₱600</div>
 </div>
 
-<div class="card" onclick="setService('Mizpah Signature')">
+<div class="card" onclick="setService('Mizpah Signature',750,1100,1450)">
 Mizpah Signature
-<div class="desc">Blend of Swedish, Shiatsu, deep tissue & stretching.</div>
+<div class="desc">Premium spa blend therapy</div>
+<div class="price">Starts at ₱750</div>
 </div>
 
-<div class="card" onclick="setService('Thai Massage')">
+<div class="card" onclick="setService('Thai Massage',650,950,1250)">
 Thai Massage
-<div class="desc">Stretching + pressure therapy for flexibility.</div>
+<div class="desc">Stretch + pressure therapy</div>
+<div class="price">Starts at ₱650</div>
 </div>
 
-<div class="card" onclick="setService('Shiatsu Dry Massage')">
-Shiatsu Dry Massage
-<div class="desc">Rhythmic finger pressure for energy flow & relief.</div>
+<div class="card" onclick="setService('Shiatsu Massage',650,950,1250)">
+Shiatsu Massage
+<div class="desc">Energy flow therapy</div>
+<div class="price">Starts at ₱650</div>
 </div>
 
-<div class="card" onclick="setService('Lymphatic Massage')">
+<div class="card" onclick="setService('Lymphatic Massage',850,1250,1650)">
 Lymphatic Massage
-<div class="desc">Detox massage for swelling & fluid retention.</div>
+<div class="desc">Detox & fluid drainage</div>
+<div class="price">Starts at ₱850</div>
 </div>
 
-<div class="card" onclick="setService('Prenatal / Postnatal Massage')">
+<div class="card" onclick="setService('Prenatal Massage',850,1250,1650)">
 Prenatal / Postnatal
-<div class="desc">Safe massage for pregnancy & recovery.</div>
+<div class="desc">Safe pregnancy massage</div>
+<div class="price">Starts at ₱850</div>
 </div>
 
 </div>
 </div>
 
-<!-- PACKAGES (RESTORED) -->
 <div class="section">
-<div class="title">MIZPAH Packages</div>
+<div class="title">Mizpah Packages</div>
 
 <div class="grid">
 
-<div class="card" onclick="setService('Bronze Package')">
+<div class="card" onclick="setService('Bronze Package',1600,1600,1600)">
 🥉 Bronze Package
-<div class="desc">Swedish + Scrub + Hot Stone + Masks</div>
-<div class="price">₱1,600</div>
+<div class="desc">Swedish + Scrub + Hot Stone</div>
+<div class="price">₱1,600 • 1h45</div>
 </div>
 
-<div class="card" onclick="setService('Silver Package')">
+<div class="card" onclick="setService('Silver Package',1800,1800,1800)">
 🥈 Silver Package
-<div class="desc">Signature + Scrub + Hot Stone + Masks</div>
-<div class="price">₱1,800</div>
+<div class="desc">Signature full spa experience</div>
+<div class="price">₱1,800 • 1h45</div>
 </div>
 
-<div class="card" onclick="setService('Gold Package')">
+<div class="card" onclick="setService('Gold Package',2000,2000,2000)">
 🥇 Gold Package
-<div class="desc">Full premium experience</div>
-<div class="price">₱2,000</div>
+<div class="desc">Full luxury spa experience</div>
+<div class="price">₱2,000 • 2hrs</div>
 </div>
 
 </div>
 </div>
 
-<!-- DURATION -->
-<div class="section">
-<div class="title">Choose Duration</div>
-
-<div class="grid">
-
-<div class="card" onclick="setDuration('1 Hour',600)">1 Hour</div>
-<div class="card" onclick="setDuration('1.5 Hours',850)">1.5 Hours</div>
-<div class="card" onclick="setDuration('2 Hours',1150)">2 Hours</div>
-
-</div>
-</div>
-
-<!-- ADD ONS -->
 <div class="section">
 <div class="title">Add-ons</div>
 
-<div class="addons">
-<label><input type="checkbox" value="300" class="addon"> Hot Stone (+₱300)</label>
-<label><input type="checkbox" value="350" class="addon"> Foot Massage (+₱350)</label>
-<label><input type="checkbox" value="350" class="addon"> Head & Shoulder (+₱350)</label>
-<label><input type="checkbox" value="750" class="addon"> Body Scrub (+₱750)</label>
+<div class="grid">
+
+<div class="card">
+<div class="desc">Hot Stone Therapy</div>
+<div class="price">+₱300</div>
+</div>
+
+<div class="card">
+<div class="desc">Foot Reflex Massage</div>
+<div class="price">+₱350</div>
+</div>
+
+<div class="card">
+<div class="desc">Head & Shoulder Relief</div>
+<div class="price">+₱350</div>
+</div>
+
+<div class="card">
+<div class="desc">Premium Body Scrub</div>
+<div class="price">+₱750</div>
+</div>
+
 </div>
 </div>
 
-<!-- FORM -->
 <div class="section">
-<div class="title">Booking Form</div>
+<div class="title">Booking Details</div>
 
 <div class="form-box">
 
 <form method="POST">
 
 <label>Service</label>
-<input name="service" id="service" readonly required>
+<input id="service" name="service" readonly required>
 
 <label>Duration</label>
-<input name="duration" id="duration" readonly required>
+<select id="duration" onchange="calcPrice()" required>
+<option value="">Select</option>
+<option value="1 Hour">1 Hour</option>
+<option value="1.5 Hours">1.5 Hours</option>
+<option value="2 Hours">2 Hours</option>
+</select>
+
+<input type="hidden" name="duration" id="durationText">
+<input type="hidden" name="price" id="price">
+
+<div id="priceBox" style="color:#D6C29C;margin-top:5px;"></div>
 
 <div class="row">
-<div>
-<label>Name</label>
-<input name="customer_name" required>
-</div>
-<div>
-<label>Phone</label>
-<input name="phone" required>
-</div>
+<input name="customer_name" placeholder="Name" required>
+<input name="phone" placeholder="Phone" required>
 </div>
 
 <div class="row">
-<div>
-<label>Date</label>
 <input type="date" name="booking_date" required>
-</div>
 
-<div>
-<label>Time</label>
-<select name="booking_time" required>
+<select name="booking_time">
 <option>3:00 PM</option>
 <option>4:00 PM</option>
 <option>5:00 PM</option>
@@ -260,23 +325,16 @@ Prenatal / Postnatal
 <option>7:00 PM</option>
 <option>8:00 PM</option>
 <option>9:00 PM</option>
-<option>10:00 PM</option>
-<option>11:00 PM</option>
-<option>12:00 AM</option>
-<option>1:00 AM</option>
-<option>2:00 AM</option>
 </select>
 </div>
-</div>
 
-<label>Pax</label>
 <select name="pax">
-<option>1</option><option>2</option><option>3</option>
-<option>4</option><option>5</option><option>6</option>
+<option>1</option><option>2</option>
+<option>3</option><option>4</option>
+<option>5</option><option>6</option>
 </select>
 
-<label>Notes</label>
-<textarea name="notes"></textarea>
+<textarea name="notes" placeholder="Notes"></textarea>
 
 <button name="submit_booking">Confirm Booking</button>
 
@@ -286,13 +344,32 @@ Prenatal / Postnatal
 </div>
 
 <script>
-function setService(s){
-document.getElementById("service").value = s;
+
+let prices = {};
+
+function setService(name,p1,p2,p3){
+document.getElementById("service").value = name;
+prices = {
+"1 Hour":p1,
+"1.5 Hours":p2,
+"2 Hours":p3
+};
+document.getElementById("priceBox").innerText="";
+document.getElementById("price").value="";
+document.getElementById("duration").value="";
 }
 
-function setDuration(d){
-document.getElementById("duration").value = d;
+function calcPrice(){
+let d = document.getElementById("duration").value;
+let p = prices[d] || 0;
+
+document.getElementById("price").value = p;
+document.getElementById("durationText").value = d;
+
+document.getElementById("priceBox").innerText =
+"Estimated Price: ₱" + p;
 }
+
 </script>
 
 </body>

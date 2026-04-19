@@ -1,15 +1,13 @@
 <?php
-
-$host = "localhost";
+$host = "127.0.0.1";
 $user = "root";
 $pass = "";
-$dbname = "mizpah_spa";
+$db   = "mizpah_spa";
 $port = 3307;
 
-$conn = mysqli_connect($host, $user, $pass, $dbname, $port);
+$conn = mysqli_connect($host,$user,$pass,$db,$port);
 
-if (!$conn) {
-    die("Database connection failed: " . mysqli_connect_error());
+if(!$conn){
+die("MySQL not running on port 3307.");
 }
-
 ?>

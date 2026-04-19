@@ -1,289 +1,140 @@
 *{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
 }
 
 body{
-  font-family:'Poppins', sans-serif;
-  background:#0D0D0D;
-  color:#F8F5F0;
+background:#0b0b0b;
+color:#fff;
 }
 
-/* ================= SIDEBAR ================= */
+/* SIDEBAR */
 .sidebar{
-  width:230px;
-  height:100vh;
-  background:#111111;
-  border-right:1px solid #D6C29C;
-  position:fixed;
-  top:0;
-  left:0;
-  padding:25px 18px;
-  overflow-y:auto;
+position:fixed;
+left:0;
+top:0;
+width:260px;
+height:100vh;
+background:#111;
+padding:20px;
+border-right:1px solid rgba(214,194,156,.15);
+display:flex;
+flex-direction:column;
+gap:10px;
 }
 
-.sidebar h2{
-  font-family:'Playfair Display', serif;
-  color:#D6C29C;
-  font-size:24px;
-  margin-bottom:25px;
+/* BRAND */
+.brand{
+text-align:center;
+padding-bottom:20px;
+margin-bottom:10px;
+border-bottom:1px solid rgba(255,255,255,.06);
 }
 
+.brand img{
+width:78px;
+height:78px;
+object-fit:contain;
+border-radius:50%;
+padding:6px;
+background:#1a1a1a;
+border:1px solid rgba(214,194,156,.2);
+box-shadow:0 0 18px rgba(214,194,156,.12);
+margin-bottom:12px;
+}
+
+.brand h2{
+font-size:17px;
+color:#D6C29C;
+line-height:1.4;
+}
+
+.brand span{
+font-size:12px;
+color:#999;
+}
+
+/* LINKS */
 .sidebar a{
-  display:block;
-  color:#F8F5F0;
-  text-decoration:none;
-  padding:12px 14px;
-  margin-bottom:8px;
-  border-radius:8px;
-  transition:.3s;
+color:#ddd;
+text-decoration:none;
+padding:13px 15px;
+border-radius:10px;
+font-size:15px;
+transition:.25s;
+display:block;
 }
 
 .sidebar a:hover{
-  background:#D6C29C;
-  color:#0D0D0D;
+background:#1b1b1b;
+color:#D6C29C;
+transform:translateX(4px);
 }
 
-/* ================= MAIN ================= */
+.sidebar a.active{
+background:#D6C29C;
+color:#111;
+font-weight:700;
+}
+
+.sidebar a.logout{
+margin-top:auto;
+background:#1a1a1a;
+color:#ffb3b3;
+}
+
+.sidebar a.logout:hover{
+background:#2a1212;
+color:#ff6b6b;
+}
+
+/* MAIN CONTENT */
 .main{
-  margin-left:230px;
-  padding:35px;
+margin-left:260px;
+padding:30px;
 }
 
-h1,h2,h3{
-  font-family:'Playfair Display', serif;
-  color:#D6C29C;
-  margin-bottom:10px;
-}
-
-p{
-  color:#CFCFCF;
-  margin-bottom:15px;
-}
-
-/* ================= CARDS ================= */
+/* CARDS */
 .cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:18px;
-  margin-bottom:25px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:16px;
+margin-top:20px;
 }
 
 .card{
-  background:#171717;
-  border:1px solid rgba(214,194,156,.25);
-  border-radius:14px;
-  padding:22px;
+background:#161616;
+padding:22px;
+border-radius:14px;
+border:1px solid rgba(214,194,156,.12);
+}
+
+.card h3{
+color:#D6C29C;
+font-size:15px;
+margin-bottom:8px;
 }
 
 .card p{
-  font-size:24px;
-  color:#F8F5F0;
-  font-weight:700;
+font-size:28px;
+font-weight:700;
 }
 
-/* ================= TABLE ================= */
-.table{
-  width:100%;
-  border-collapse:collapse;
-  background:#171717;
-  border-radius:14px;
-  overflow:hidden;
-}
-
-.table th{
-  background:#D6C29C;
-  color:#0D0D0D;
-  padding:14px;
-  text-align:left;
-}
-
-.table td{
-  padding:14px;
-  border-bottom:1px solid #2A2A2A;
-  vertical-align:middle;
-}
-
-.table tr:hover{
-  background:#1F1F1F;
-}
-
-/* ================= BOOKING FORM ================= */
-.table form{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-
-select{
-  padding:10px 12px;
-  border-radius:8px;
-  border:1px solid #8E7C68;
-  background:#111111;
-  color:#F8F5F0;
-  min-width:140px;
-}
-
-.update-btn,
-.btn,
-button{
-  background:#D6C29C;
-  color:#0D0D0D;
-  border:none;
-  padding:10px 14px;
-  border-radius:8px;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.update-btn:hover,
-.btn:hover,
-button:hover{
-  background:#F8F5F0;
-}
-
-/* ================= STATUS COLORS ================= */
-.pending{
-  color:#f5b041;
-}
-
-.confirmed{
-  color:#58d68d;
-}
-
-.completed{
-  color:#85c1e9;
-}
-
-.cancelled{
-  color:#ec7063;
-}
-
-/* ================= CALENDAR ================= */
-.calendar-box{
-  background:#171717;
-  border:1px solid rgba(214,194,156,.18);
-  border-radius:16px;
-  padding:20px;
-}
-
-.calendar-table{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:8px;
-}
-
-.calendar-table th{
-  background:#D6C29C;
-  color:#0D0D0D;
-  padding:10px;
-  border-radius:8px;
-}
-
-.calendar-table td{
-  background:#1B1B1B;
-  color:#F8F5F0;
-  height:90px;
-  vertical-align:top;
-  padding:10px;
-  border-radius:10px;
-  transition:.3s;
-}
-
-.calendar-table td:hover{
-  background:#232323;
-}
-
-.calendar-table td.booked{
-  background:#8E7C68;
-  color:#FFFFFF;
-}
-
-.num{
-  font-weight:700;
-}
-
-.badge{
-  display:inline-block;
-  margin-top:6px;
-  font-size:11px;
-  padding:4px 8px;
-  border-radius:20px;
-  background:#D6C29C;
-  color:#0D0D0D;
-}
-
-/* ================= MODAL ================= */
-.modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.7);
-  z-index:999;
-}
-
-.modal-content{
-  background:#171717;
-  width:90%;
-  max-width:480px;
-  margin:6% auto;
-  padding:28px;
-  border-radius:16px;
-  position:relative;
-  border:1px solid #D6C29C;
-}
-
-.close{
-  position:absolute;
-  top:10px;
-  right:14px;
-  font-size:28px;
-  color:#D6C29C;
-  cursor:pointer;
-}
-
-/* ================= REPORTS ================= */
-.report-box,
-.report-card,
-canvas{
-  background:#171717 !important;
-  border:1px solid rgba(214,194,156,.18);
-  border-radius:16px;
-  padding:20px;
-}
-
-canvas{
-  max-width:100%;
-}
-
-/* ================= MOBILE ================= */
-@media(max-width:768px){
+/* MOBILE */
+@media(max-width:900px){
 
 .sidebar{
-  width:100%;
-  height:auto;
-  position:relative;
+width:100%;
+height:auto;
+position:relative;
+flex-direction:column;
 }
 
 .main{
-  margin-left:0;
-  padding:20px;
-}
-
-.cards{
-  grid-template-columns:1fr;
-}
-
-.table{
-  display:block;
-  overflow-x:auto;
-}
-
-.table form{
-  flex-direction:column;
-  align-items:flex-start;
+margin-left:0;
+padding:20px;
 }
 
 }
