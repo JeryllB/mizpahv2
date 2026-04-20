@@ -1,27 +1,16 @@
-<?php
-$current = basename($_SERVER['PHP_SELF']);
-?>
-
 <div class="sidebar">
 
 <div class="brand">
     <img src="../assets/images/logo.png" alt="Logo">
     <h2>MIZPAH ADMIN</h2>
-    <span>Wellness Spa Panel</span>
 </div>
 
-<a href="dashboard.php" class="<?= $current=='dashboard.php' ? 'active':'' ?>">Dashboard</a>
-
-<a href="bookings.php" class="<?= $current=='bookings.php' ? 'active':'' ?>">Bookings</a>
-
-<a href="services.php" class="<?= $current=='services.php' ? 'active':'' ?>">Services</a>
-
-<a href="users.php" class="<?= $current=='users.php' ? 'active':'' ?>">Users</a>
-
-<a href="calendar.php" class="<?= $current=='calendar.php' ? 'active':'' ?>">Calendar</a>
-
-<a href="reports.php" class="<?= $current=='reports.php' ? 'active':'' ?>">Reports</a>
-
-<a href="logout.php" class="logout">Logout</a>
+<a href="dashboard.php">Dashboard</a>
+<a href="services.php">Services</a>
+<a href="bookings.php">Bookings</a>
+<a href="therapists.php">Therapists</a>
+<a href="users.php">Users</a>
+<a href="calendar.php">Calendar</a>
+<a href="logout.php">Logout</a>
 
 </div>
