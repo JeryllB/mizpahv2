@@ -38,7 +38,7 @@ include 'includes/db.php';
         <h2 class="hero-title-gold">Exceptional Care</h2>
 
         <p class="hero-text">
-            Kawit's premier wellness sanctuary — where skilled hands and serene surroundings restore your body, mind, and spirit.
+            Kawit's premier wellness sanctuary — where relaxation meets luxury experience.
         </p>
 
         <a href="booking-guest.php" class="btn-primary">Book Now</a>
@@ -52,7 +52,7 @@ include 'includes/db.php';
     </div>
 </section>
 
-<!-- SIGNATURE / SERVICES CARDS -->
+<!-- SIGNATURE SERVICES -->
 <section class="section">
 
     <h2>Mizpah Signature Services</h2>
@@ -63,19 +63,22 @@ include 'includes/db.php';
             <h3>Swedish Massage</h3>
             <p class="time">1–2 hrs</p>
             <p class="price">From ₱600</p>
+            <a href="booking-guest.php" class="btn-small">Book Now</a>
         </div>
 
         <div class="service-card featured">
-            <div class="badge">Popular</div>
+            <div class="badge">Recommended</div>
             <h3>MIZPAH Signature</h3>
             <p class="time">1–2 hrs</p>
             <p class="price">From ₱750</p>
+            <a href="booking-guest.php" class="btn-small">Book Now</a>
         </div>
 
         <div class="service-card">
             <h3>Lymphatic Massage</h3>
             <p class="time">1–2 hrs</p>
             <p class="price">From ₱850</p>
+            <a href="booking-guest.php" class="btn-small">Book Now</a>
         </div>
 
     </div>
@@ -92,21 +95,21 @@ include 'includes/db.php';
         <div class="package-card bronze">
             <h3>Bronze Package</h3>
             <p class="duration">1 Hour Massage</p>
-            <p>Perfect for quick relaxation and stress relief.</p>
+            <p>Perfect for quick relaxation.</p>
             <strong>₱1,600</strong>
         </div>
 
         <div class="package-card silver">
             <h3>Silver Package</h3>
             <p class="duration">1.5 Hours Relaxation</p>
-            <p>Balanced massage for full body comfort.</p>
+            <p>Balanced full body care.</p>
             <strong>₱1,800</strong>
         </div>
 
         <div class="package-card gold">
             <h3>Gold Package</h3>
             <p class="duration">2 Hours Premium Care</p>
-            <p>Premium deep relaxation with luxury care.</p>
+            <p>Ultimate luxury experience.</p>
             <strong>₱2,000</strong>
         </div>
 
@@ -120,7 +123,6 @@ include 'includes/db.php';
     <h2>Why Choose Us</h2>
 
     <p class="subtitle">A Different Kind of Wellness</p>
-    <p>Every detail crafted with your comfort in mind.</p>
 
     <div class="why-grid">
 
@@ -131,17 +133,17 @@ include 'includes/db.php';
 
         <div class="why-box">
             <h3>Licensed Therapists</h3>
-            <p>Professionally certified with experience.</p>
+            <p>Professionally certified experts.</p>
         </div>
 
         <div class="why-box">
             <h3>Clean & Safe</h3>
-            <p>Strict sanitization protocols.</p>
+            <p>Strict hygiene standards.</p>
         </div>
 
         <div class="why-box">
             <h3>Affordable Luxury</h3>
-            <p>Premium spa at accessible prices.</p>
+            <p>Premium spa experience at fair price.</p>
         </div>
 
     </div>
@@ -154,9 +156,9 @@ include 'includes/db.php';
         <div class="promise-grid">
 
             <ul class="promise-list">
-                <li>Every therapist is professionally trained and licensed.</li>
-                <li>We maintain strict hygiene protocols.</li>
-                <li>Luxury spa experience at affordable rates.</li>
+                <li>Licensed and trained therapists</li>
+                <li>Clean and safe environment</li>
+                <li>Luxury spa experience for all</li>
             </ul>
 
             <div class="stats">
@@ -189,31 +191,6 @@ include 'includes/db.php';
 
 </section>
 
-<!-- TESTIMONIALS -->
-<section class="section">
-
-    <h2>What Clients Say</h2>
-
-    <div class="card-container">
-
-        <?php
-        $testi = mysqli_query($conn,"SELECT * FROM testimonials WHERE featured=1 LIMIT 3");
-
-        while($row = mysqli_fetch_assoc($testi)){
-        ?>
-
-        <div class="card">
-            <p><?= str_repeat("⭐",$row['rating']) ?></p>
-            <p>"<?= $row['message'] ?>"</p>
-            <h4><?= $row['name'] ?></h4>
-        </div>
-
-        <?php } ?>
-
-    </div>
-
-</section>
-
 <!-- CTA -->
 <section class="section">
     <h2>Ready to Relax?</h2>
@@ -227,7 +204,7 @@ include 'includes/db.php';
 
         <div>
             <h3>Mizpah Wellness Spa</h3>
-            <p>Your sanctuary for relaxation and healing.</p>
+            <p>Your sanctuary for relaxation.</p>
         </div>
 
         <div>
@@ -251,16 +228,9 @@ include 'includes/db.php';
 
 </footer>
 
-<!-- SCROLL HEADER SCRIPT -->
 <script>
 window.addEventListener("scroll", function () {
-    const header = document.querySelector(".site-header");
-
-    if (window.scrollY > 50) {
-        header.classList.add("scrolled");
-    } else {
-        header.classList.remove("scrolled");
-    }
+    document.querySelector(".site-header").classList.toggle("scrolled", window.scrollY > 50);
 });
 </script>
 

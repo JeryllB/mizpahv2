@@ -381,7 +381,7 @@ font-size:13px;
 
 <td>
 <a class="action" href="?edit=<?= $row['id'] ?>">Edit</a>
-<a class="action" href="?delete=<?= $row['id'] ?>" onclick="return confirm('Delete therapist?')">Delete</a>
+<a class="action" href="?remove=<?= $row['id'] ?>" onclick="return confirm('Remove therapist?')">Remove</a>
 </td>
 
 </tr>
