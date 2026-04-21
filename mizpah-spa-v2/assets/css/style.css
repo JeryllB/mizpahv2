@@ -307,6 +307,48 @@ color:#D6C29C;
 font-size:20px;
 }
 
+/* ================= PACKAGE SIDE ACCENT ONLY ================= */
+
+.package-card{
+position:relative;
+border:1px solid rgba(255,255,255,0.08);
+border-left:6px solid transparent;
+transition:0.3s ease;
+}
+
+/* BRONZE */
+.package-card.bronze{
+border-left-color:#cd7f32;
+}
+
+.package-card.bronze h3{
+color:#cd7f32;
+}
+
+/* SILVER */
+.package-card.silver{
+border-left-color:#c0c0c0;
+}
+
+.package-card.silver h3{
+color:#c0c0c0;
+}
+
+/* GOLD */
+.package-card.gold{
+border-left-color:#D6C29C;
+}
+
+.package-card.gold h3{
+color:#D6C29C;
+}
+
+/* optional hover glow */
+.package-card:hover{
+transform:translateY(-5px);
+box-shadow:0 10px 25px rgba(0,0,0,0.4);
+}
+
 /* ================= FOOTER ================= */
 .footer{
 background:#111;
@@ -325,3 +367,4 @@ text-align:center;
 margin-top:20px;
 color:#aaa;
 }
+

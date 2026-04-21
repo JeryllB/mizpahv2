@@ -49,33 +49,37 @@ if(isset($_POST['login'])){
 
         $user = mysqli_fetch_assoc($query);
 
-        if(password_verify($password,$user['password'])){
+        $login_success = false;
+
+        // bcrypt check (new accounts)
+        if(password_verify($password, $user['password'])){
+            $login_success = true;
+        }
+
+        // MD5 check (old admin account)
+        else if(md5($password) === $user['password']){
+            $login_success = true;
+        }
+
+        if($login_success){
 
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['name']    = $user['name'];
             $_SESSION['role']    = $user['role'];
 
-            /* =========================
-               REDIRECT SYSTEM
-            ========================= */
             if($user['role'] == 'admin'){
-
                 header("Location: admin/dashboard.php");
-
             }else{
-
                 header("Location: customer/dashboard.php");
             }
 
             exit();
 
         }else{
-
             $error = "Invalid email or password.";
         }
 
     }else{
-
         $error = "Invalid email or password.";
     }
 }
@@ -103,7 +107,6 @@ body{
     background:#0b0b0b;
 }
 
-/* BACKGROUND */
 .login-wrapper{
     position:fixed;
     inset:0;
@@ -116,7 +119,6 @@ body{
     padding:20px;
 }
 
-/* CARD */
 .login-card{
     width:100%;
     max-width:390px;
@@ -128,13 +130,11 @@ body{
     box-shadow:0 25px 60px rgba(0,0,0,.65);
 }
 
-/* LOGO */
 .login-logo{
     width:72px;
     margin-bottom:15px;
 }
 
-/* TEXT */
 h2{
     font-family:'Playfair Display',serif;
     color:#D6C29C;
@@ -147,7 +147,6 @@ h2{
     margin:10px 0 20px;
 }
 
-/* ALERT */
 .error{
     background:rgba(255,0,0,.10);
     color:#ff7c7c;
@@ -166,7 +165,6 @@ h2{
     font-size:13px;
 }
 
-/* INPUT */
 input{
     width:100%;
     padding:12px;
@@ -182,7 +180,6 @@ input:focus{
     border-color:#D6C29C;
 }
 
-/* BUTTON */
 button{
     width:100%;
     padding:12px;
@@ -199,7 +196,6 @@ button:hover{
     transform:translateY(-2px);
 }
 
-/* TOGGLE */
 .toggle{
     margin-top:14px;
     font-size:12px;
@@ -211,7 +207,6 @@ button:hover{
     color:#D6C29C;
 }
 
-/* FOOTER */
 .footer-text{
     margin-top:16px;
     font-size:11px;
@@ -223,7 +218,6 @@ button:hover{
 <body>
 
 <div class="login-wrapper">
-
 <div class="login-card">
 
     <img src="assets/images/logo.png" class="login-logo">
@@ -239,14 +233,12 @@ button:hover{
         <div class="success"><?= $success ?></div>
     <?php } ?>
 
-    <!-- LOGIN -->
     <form method="POST" id="loginForm">
         <input type="email" name="email" placeholder="Email Address" required>
         <input type="password" name="password" placeholder="Password" required>
         <button type="submit" name="login">Login</button>
     </form>
 
-    <!-- REGISTER -->
     <form method="POST" id="registerForm" style="display:none;">
         <input type="text" name="name" placeholder="Full Name" required>
         <input type="email" name="email" placeholder="Email Address" required>

@@ -24,14 +24,17 @@ if(isset($_POST['submit_booking'])){
     $time     = mysqli_real_escape_string($conn,$_POST['booking_time']);
     $pax      = mysqli_real_escape_string($conn,$_POST['pax']);
     $notes    = mysqli_real_escape_string($conn,$_POST['notes']);
-    $therapist= mysqli_real_escape_string($conn,$_POST['therapist']);
 
-    $addons = isset($_POST['addons']) ? implode(", ", $_POST['addons']) : "";
+    // FIXED: therapist_id (hindi therapist)
+    $therapist_id = mysqli_real_escape_string($conn,$_POST['therapist'] ?? '');
+
+    // addons FIX
+    $addons = isset($_POST['addons']) ? mysqli_real_escape_string($conn,$_POST['addons']) : "";
 
     mysqli_query($conn,"INSERT INTO bookings
-    (user_id,customer_name,phone,service,duration,price,booking_date,booking_time,pax,addons,therapist,notes,status)
+    (user_id,customer_name,phone,service,duration,price,booking_date,booking_time,pax,addons,therapist_id,notes,status)
     VALUES
-    ('$user_id','$name','$phone','$service','$duration','$price','$date','$time','$pax','$addons','$therapist','$notes','Pending')
+    ('$user_id','$name','$phone','$service','$duration','$price','$date','$time','$pax','$addons','$therapist_id','$notes','Pending')
     ");
 
     echo "<script>alert('Booking Successful!');window.location='mybookings.php';</script>";
@@ -64,20 +67,13 @@ border-bottom:1px solid #333;
 }
 
 .logo{
-font-family:Playfair Display;
+font-family:'Playfair Display';
 color:#D6C29C;
 font-size:22px;
 }
 
-.section{
-padding:25px 8%;
-}
-
-.title{
-color:#D6C29C;
-font-size:20px;
-margin-bottom:10px;
-}
+.section{padding:25px 8%;}
+.title{color:#D6C29C;font-size:20px;margin-bottom:10px;}
 
 .grid{
 display:grid;
@@ -99,30 +95,8 @@ border-color:#D6C29C;
 transform:scale(1.02);
 }
 
-.desc{
-font-size:13px;
-color:#bbb;
-margin:8px 0;
-}
-
-.price{
-color:#D6C29C;
-font-weight:600;
-}
-
-.duration-btn{
-display:inline-block;
-margin-right:5px;
-padding:5px 10px;
-border:1px solid #444;
-cursor:pointer;
-font-size:12px;
-}
-
-.duration-btn.active{
-background:#D6C29C;
-color:#000;
-}
+.desc{font-size:13px;color:#bbb;margin:8px 0;}
+.price{color:#D6C29C;font-weight:600;}
 
 .summary{
 background:#161616;
@@ -165,18 +139,32 @@ cursor:pointer;
 
 <input type="hidden" name="customer_name" value="<?= $user_name ?>">
 
-<!-- THERAPIST -->
+<!-- THERAPIST (FIXED - therapist_id) -->
 <div class="section">
 <div class="title">Preferred Therapist (Optional)</div>
+
 <select name="therapist">
-<option value="">No Preference</option>
-<option>Therapist A</option>
-<option>Therapist B</option>
-<option>Therapist C</option>
+    <option value="">No Preference</option>
+
+    <?php
+    $query = mysqli_query($conn,"SELECT id, name FROM therapists ORDER BY name ASC");
+
+    if($query && mysqli_num_rows($query) > 0){
+        while($row = mysqli_fetch_assoc($query)){
+    ?>
+        <option value="<?= $row['id'] ?>">
+            <?= htmlspecialchars($row['name']) ?>
+        </option>
+    <?php
+        }
+    } else {
+        echo '<option disabled>No therapists available</option>';
+    }
+    ?>
 </select>
 </div>
 
-<!-- SERVICES -->
+<!-- SERVICES (UNCHANGED UI) -->
 <div class="section">
 <div class="title">Services</div>
 
@@ -215,7 +203,7 @@ cursor:pointer;
 </div>
 </div>
 
-<!-- PACKAGES -->
+<!-- PACKAGES (UNCHANGED) -->
 <div class="section">
 <div class="title">Mizpah Packages (Fixed Duration)</div>
 
@@ -281,7 +269,7 @@ Body Scrub <div class="desc">Skin renewal treatment</div><div class="price">₱7
 
 </div>
 
-<input type="hidden" name="addons[]" id="addons">
+<input type="hidden" name="addons" id="addons">
 </div>
 
 <!-- BOOKING -->
@@ -310,12 +298,13 @@ Body Scrub <div class="desc">Skin renewal treatment</div><div class="price">₱7
 <option>5</option><option>6</option>
 </select>
 
+<label>Phone</label>
+<input type="text" name="phone">
+
 <label>Notes</label>
 <textarea name="notes"></textarea>
 
-<div class="summary" id="summary">
-Select service or package
-</div>
+<div class="summary" id="summary">Select service or package</div>
 
 <button type="submit" name="submit_booking">CONFIRM BOOKING</button>
 
