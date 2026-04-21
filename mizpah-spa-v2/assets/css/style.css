@@ -10,6 +10,92 @@ background:#0b0b0b;
 color:#fff;
 }
 
+
+/* ================= TYPOGRAPHY SYSTEM ================= */
+
+/* Base font */
+body{
+font-family:'Poppins', sans-serif;
+font-size:16px;
+line-height:1.6;
+color:#fff;
+background:#0b0b0b;
+}
+
+/* Headings */
+h1, h2, h3, h4{
+font-family:'Playfair Display', serif;
+font-weight:600;
+letter-spacing:0.5px;
+margin:0;
+}
+
+/* HERO TITLE SYSTEM */
+.hero-title-white{
+font-size:56px;
+font-weight:700;
+letter-spacing:1px;
+line-height:1.1;
+}
+
+.hero-title-gold{
+font-size:42px;
+color:#D6C29C;
+font-weight:600;
+letter-spacing:1px;
+}
+
+/* SECTION TITLE */
+.section h2{
+font-size:34px;
+color:#D6C29C;
+margin-bottom:30px;
+text-align:center;
+}
+
+/* SUBTITLE */
+.subtitle{
+font-size:16px;
+color:#bbb;
+letter-spacing:2px;
+text-transform:uppercase;
+margin-top:-15px;
+margin-bottom:20px;
+}
+
+/* PARAGRAPH */
+p{
+color:#ccc;
+font-size:15px;
+line-height:1.7;
+}
+
+/* SMALL TEXT */
+small, .small{
+font-size:12px;
+color:#888;
+}
+
+/* PRICE TEXT (luxury accent) */
+.price, .service-card .price{
+font-size:30px;
+font-weight:700;
+color:#fff;
+letter-spacing:0.5px;
+}
+
+/* GOLD ACCENT TEXT */
+.gold-text{
+color:#D6C29C;
+}
+
+/* BUTTON TEXT */
+.btn-primary, .btn-small{
+font-family:'Poppins', sans-serif;
+font-weight:600;
+letter-spacing:0.5px;
+}
+
 /* ================= HEADER ================= */
 .site-header{
 position:fixed;
@@ -80,20 +166,56 @@ max-width:700px;
 .hero-title-gold{font-size:40px;color:#D6C29C;}
 .hero-text{color:#ccc;margin:15px 0;}
 
+/* ================= HERO INFO ================= */
 .hero-info{
 display:flex;
-gap:12px;
+gap:22px;
 justify-content:center;
 flex-wrap:wrap;
 margin-top:25px;
+animation:fadeUp 0.8s ease both;
 }
 
 .info-box{
-background:rgba(0,0,0,0.35);
-backdrop-filter:blur(10px);
-padding:12px 16px;
-border-radius:10px;
-border:1px solid rgba(214,194,156,.25);
+background:transparent;
+border:none;
+padding:0;
+margin:0;
+color:rgba(255,255,255,0.85);
+font-size:15px;
+font-weight:500;
+display:flex;
+align-items:center;
+gap:8px;
+transition:0.25s ease;
+cursor:default;
+}
+
+.info-box span{
+color:#D6C29C;
+font-size:16px;
+}
+
+.info-box:hover{
+transform:translateY(-2px);
+color:#fff;
+}
+
+.info-box:hover span{
+text-shadow:0 0 12px rgba(214,194,156,0.6);
+}
+
+@keyframes fadeUp{
+from{opacity:0; transform:translateY(20px);}
+to{opacity:1; transform:translateY(0);}
+}
+
+@media(max-width:768px){
+.hero-info{
+flex-direction:column;
+gap:10px;
+text-align:center;
+}
 }
 
 /* ================= SECTION ================= */
@@ -111,39 +233,61 @@ font-family:'Playfair Display';
 /* ================= SERVICE ================= */
 .service-grid{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:20px;
-max-width:900px;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:25px;
+max-width:1100px;
 margin:auto;
 }
 
 .service-card{
-background:#161616;
-padding:22px;
-border-radius:14px;
-border:1px solid rgba(214,194,156,.15);
-transition:0.3s ease;
+background:#141414;
+padding:28px 24px;
+border-radius:18px;
+border:1px solid rgba(255,255,255,0.08);
+text-align:center;
+position:relative;
+transition:0.35s ease;
+box-shadow:0 8px 25px rgba(0,0,0,0.25);
 }
 
 .service-card:hover{
-transform:translateY(-6px);
-box-shadow:0 10px 25px rgba(214,194,156,0.15);
+transform:translateY(-8px);
+box-shadow:0 15px 35px rgba(0,0,0,0.45);
 }
 
-.featured{
-border:1px solid #D6C29C;
-position:relative;
+.service-card h3{
+font-family:'Playfair Display';
+color:#D6C29C;
+font-size:24px;
+margin-bottom:10px;
 }
 
-.badge{
-position:absolute;
-top:10px;
-right:10px;
+.service-card .time{
+color:#bbb;
+font-size:14px;
+margin-bottom:8px;
+}
+
+.service-card .price{
+font-size:28px;
+font-weight:700;
+margin-bottom:15px;
+}
+
+.btn-small{
+display:inline-block;
+padding:10px 18px;
 background:#D6C29C;
 color:#111;
-padding:4px 10px;
-font-size:12px;
-border-radius:6px;
+border-radius:10px;
+font-weight:700;
+text-decoration:none;
+transition:0.3s ease;
+}
+
+.btn-small:hover{
+background:#fff;
+transform:scale(1.05);
 }
 
 /* ================= BUTTON ================= */
@@ -159,38 +303,268 @@ text-decoration:none;
 font-weight:600;
 }
 
+/* ================= SERVICES ================= */
+.service-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:25px;
+max-width:1100px;
+margin:auto;
+align-items:stretch;
+}
+
+.service-card{
+background:#141414;
+padding:28px 24px;
+border-radius:18px;
+border:1px solid rgba(255,255,255,0.08);
+text-align:center;
+position:relative;
+overflow:hidden;
+transition:0.35s ease;
+box-shadow:0 8px 25px rgba(0,0,0,0.25);
+}
+
+.service-card:hover{
+transform:translateY(-8px);
+box-shadow:0 15px 35px rgba(0,0,0,0.45);
+border-color:rgba(214,194,156,0.25);
+}
+
+/* TITLE */
+.service-card h3{
+font-size:24px;
+margin-bottom:14px;
+font-family:'Playfair Display';
+color:#D6C29C;
+}
+
+/* TIME */
+.service-card .time{
+font-size:14px;
+color:#bbb;
+margin-bottom:10px;
+}
+
+/* PRICE */
+.service-card .price{
+font-size:28px;
+font-weight:700;
+margin-bottom:18px;
+color:#fff;
+}
+
+/* BUTTON */
+.btn-small{
+display:inline-block;
+padding:10px 18px;
+background:#D6C29C;
+color:#111;
+border-radius:10px;
+font-size:14px;
+font-weight:700;
+text-decoration:none;
+transition:0.3s ease;
+}
+
+.btn-small:hover{
+background:#fff;
+transform:scale(1.05);
+}
+
+/* ================= FEATURED SIGNATURE ================= */
+.service-card.featured{
+background:linear-gradient(145deg,#1a1a1a,#111);
+border:1px solid #D6C29C;
+transform:scale(1.04);
+box-shadow:0 15px 40px rgba(214,194,156,0.18);
+}
+
+.service-card.featured:hover{
+transform:translateY(-10px) scale(1.05);
+box-shadow:0 20px 45px rgba(214,194,156,0.28);
+}
+
+/* BADGE */
+.badge{
+position:absolute;
+top:16px;
+right:-35px;
+background:#D6C29C;
+color:#111;
+padding:7px 40px;
+font-size:11px;
+font-weight:700;
+letter-spacing:1px;
+transform:rotate(45deg);
+box-shadow:0 5px 15px rgba(0,0,0,0.25);
+}
+
+/* FEATURED TITLE */
+.service-card.featured h3{
+font-size:26px;
+color:#fff;
+}
+
+/* FEATURED PRICE */
+.service-card.featured .price{
+color:#D6C29C;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+.service-grid{
+grid-template-columns:1fr;
+}
+
+.service-card.featured{
+transform:none;
+}
+
+.service-card.featured:hover{
+transform:translateY(-8px);
+}
+
+.badge{
+right:-40px;
+font-size:10px;
+}
+
+}
+
 /* ================= PACKAGES ================= */
 .package-grid{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:20px;
-max-width:900px;
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+gap:25px;
+max-width:1200px;
 margin:auto;
+align-items:stretch;
 }
 
 .package-card{
-padding:22px;
-border-radius:14px;
-text-align:center;
-transition:0.3s ease;
+background:#141414;
+padding:28px 24px;
+border-radius:18px;
+text-align:left;
+position:relative;
+overflow:hidden;
 border:1px solid rgba(255,255,255,0.08);
+border-left:6px solid transparent;
+transition:0.35s ease;
+box-shadow:0 8px 25px rgba(0,0,0,0.25);
 }
 
 .package-card:hover{
-transform:translateY(-6px);
+transform:translateY(-8px);
+box-shadow:0 15px 35px rgba(0,0,0,0.45);
 }
 
+/* TITLE */
+.package-card h3{
+font-size:26px;
+margin-bottom:18px;
+font-family:'Playfair Display';
+}
+
+/* LIST */
+.package-list{
+list-style:none;
+padding:0;
+margin:0 0 20px;
+}
+
+.package-list li{
+padding:9px 0;
+border-bottom:1px solid rgba(255,255,255,0.06);
+color:#ddd;
+font-size:14px;
+}
+
+.package-list li:last-child{
+border-bottom:none;
+}
+
+/* DURATION */
+.package-card .duration{
+margin-top:12px;
+font-size:14px;
+color:#bbb;
+font-weight:500;
+}
+
+/* PRICE */
+.package-card strong{
+display:block;
+margin-top:12px;
+font-size:28px;
+font-weight:700;
+}
+
+/* ================= BRONZE ================= */
 .package-card.bronze{
-background:linear-gradient(135deg,#3b2a1a,#1a1a1a);
+border-left-color:#cd7f32;
 }
 
+.package-card.bronze h3,
+.package-card.bronze strong{
+color:#cd7f32;
+}
+
+/* ================= SILVER ================= */
 .package-card.silver{
-background:linear-gradient(135deg,#6b6b6b,#1a1a1a);
+border-left-color:#c0c0c0;
 }
 
+.package-card.silver h3,
+.package-card.silver strong{
+color:#e0e0e0;
+}
+
+/* ================= GOLD ================= */
 .package-card.gold{
-background:linear-gradient(135deg,#d6c29c,#3a2f1a);
+border-left-color:#D6C29C;
+}
+
+.package-card.gold h3,
+.package-card.gold strong{
+color:#D6C29C;
+}
+
+/* FEATURED LOOK */
+.package-card.gold::before{
+content:"BEST VALUE";
+position:absolute;
+top:15px;
+right:-35px;
+background:#D6C29C;
 color:#111;
+font-size:11px;
+font-weight:700;
+padding:6px 40px;
+transform:rotate(45deg);
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+.package-grid{
+grid-template-columns:1fr;
+}
+
+.package-card{
+padding:24px 20px;
+}
+
+.package-card h3{
+font-size:22px;
+}
+
+.package-card strong{
+font-size:24px;
+}
+
 }
 
 /* ================= THERAPISTS FIX ================= */
@@ -305,48 +679,6 @@ text-align:center;
 .stat-box strong{
 color:#D6C29C;
 font-size:20px;
-}
-
-/* ================= PACKAGE SIDE ACCENT ONLY ================= */
-
-.package-card{
-position:relative;
-border:1px solid rgba(255,255,255,0.08);
-border-left:6px solid transparent;
-transition:0.3s ease;
-}
-
-/* BRONZE */
-.package-card.bronze{
-border-left-color:#cd7f32;
-}
-
-.package-card.bronze h3{
-color:#cd7f32;
-}
-
-/* SILVER */
-.package-card.silver{
-border-left-color:#c0c0c0;
-}
-
-.package-card.silver h3{
-color:#c0c0c0;
-}
-
-/* GOLD */
-.package-card.gold{
-border-left-color:#D6C29C;
-}
-
-.package-card.gold h3{
-color:#D6C29C;
-}
-
-/* optional hover glow */
-.package-card:hover{
-transform:translateY(-5px);
-box-shadow:0 10px 25px rgba(0,0,0,0.4);
 }
 
 /* ================= FOOTER ================= */

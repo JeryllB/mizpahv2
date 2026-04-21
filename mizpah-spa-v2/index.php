@@ -43,13 +43,13 @@ include 'includes/db.php';
 
         <a href="booking-guest.php" class="btn-primary">Book Now</a>
 
-        <div class="hero-info">
-            <div class="info-box">☎ 0936-995-0038</div>
-            <div class="info-box">🕒 1PM – 3AM</div>
-            <div class="info-box">📍 Kawit, Cavite</div>
-        </div>
+<div class="hero-info">
+    <div class="info-box"><span>☎</span> 0936-995-0038</div>
+    <div class="info-box"><span>🕒</span> 1PM – 3AM</div>
+    <div class="info-box"><span>📍</span> Kawit, Cavite</div>
+</div>
 
-    </div>
+</div>
 </section>
 
 <!-- SIGNATURE SERVICES -->
@@ -92,24 +92,55 @@ include 'includes/db.php';
 
     <div class="package-grid">
 
+        <!-- BRONZE -->
         <div class="package-card bronze">
             <h3>Bronze Package</h3>
-            <p class="duration">1 Hour Massage</p>
-            <p>Perfect for quick relaxation.</p>
+
+            <ul class="package-list">
+                <li>Swedish Massage</li>
+                <li>Body Scrub</li>
+                <li>Hot Stone</li>
+                <li>Milk Mask</li>
+                <li>Korean Face Mask</li>
+                <li>Foot Mask</li>
+            </ul>
+
+            <p class="duration">Duration: 1 hr 45 mins</p>
             <strong>₱1,600</strong>
         </div>
 
+        <!-- SILVER -->
         <div class="package-card silver">
             <h3>Silver Package</h3>
-            <p class="duration">1.5 Hours Relaxation</p>
-            <p>Balanced full body care.</p>
+
+            <ul class="package-list">
+                <li>MIZPAH Signature Massage</li>
+                <li>Body Scrub</li>
+                <li>Hot Stone</li>
+                <li>Milk Mask</li>
+                <li>Korean Face Mask</li>
+                <li>Foot Mask</li>
+            </ul>
+
+            <p class="duration">Duration: 1 hr 45 mins</p>
             <strong>₱1,800</strong>
         </div>
 
+        <!-- GOLD -->
         <div class="package-card gold">
             <h3>Gold Package</h3>
-            <p class="duration">2 Hours Premium Care</p>
-            <p>Ultimate luxury experience.</p>
+
+            <ul class="package-list">
+                <li>MIZPAH Signature Massage</li>
+                <li>Body Scrub</li>
+                <li>Hot Stone</li>
+                <li>Head or Foot Massage</li>
+                <li>Milk Mask</li>
+                <li>Korean Face Mask</li>
+                <li>Foot Mask</li>
+            </ul>
+
+            <p class="duration">Duration: 2 hrs</p>
             <strong>₱2,000</strong>
         </div>
 
