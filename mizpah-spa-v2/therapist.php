@@ -298,7 +298,11 @@ border:1px solid rgba(214,194,156,.2);
 <div class="card">
 
 <!-- FIXED IMAGE -->
-<img src="assets/images/therapists/<?= htmlspecialchars($t['image']) ?>" 
+<?php
+$img = !empty($t['image']) ? $t['image'] : 'default.png';
+?>
+
+<img src="assets/images/therapists/<?= $img ?>" 
 onerror="this.src='assets/images/therapists/default.png'">
 
 <h1><?= htmlspecialchars($t['name']) ?></h1>

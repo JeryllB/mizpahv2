@@ -33,7 +33,7 @@ $status       = mysqli_real_escape_string($conn,$_POST['status']);
 
 $imageName = "";
 
-if(isset($_FILES['image']) && $_FILES['image']['name']!=""){
+if(isset($_FILES['image']) && $_FILES['image']['error'] == 0 && $_FILES['image']['name']!=""){
 $imageName = time().'_'.basename($_FILES['image']['name']);
 move_uploaded_file($_FILES['image']['tmp_name'],"../assets/images/therapists/".$imageName);
 }

@@ -43,108 +43,140 @@ include 'includes/db.php';
 
         <a href="booking-guest.php" class="btn-primary">Book Now</a>
 
-<div class="hero-info">
-    <div class="info-box"><span>☎</span> 0936-995-0038</div>
-    <div class="info-box"><span>🕒</span> 1PM – 3AM</div>
-    <div class="info-box"><span>📍</span> Kawit, Cavite</div>
-</div>
-
-</div>
-</section>
-
-<!-- SIGNATURE SERVICES -->
-<section class="section">
-
-    <h2>Mizpah Signature Services</h2>
-
-    <div class="service-grid">
-
-        <div class="service-card">
-            <h3>Swedish Massage</h3>
-            <p class="time">1–2 hrs</p>
-            <p class="price">From ₱600</p>
-            <a href="booking-guest.php" class="btn-small">Book Now</a>
-        </div>
-
-        <div class="service-card featured">
-            <div class="badge">Recommended</div>
-            <h3>MIZPAH Signature</h3>
-            <p class="time">1–2 hrs</p>
-            <p class="price">From ₱750</p>
-            <a href="booking-guest.php" class="btn-small">Book Now</a>
-        </div>
-
-        <div class="service-card">
-            <h3>Lymphatic Massage</h3>
-            <p class="time">1–2 hrs</p>
-            <p class="price">From ₱850</p>
-            <a href="booking-guest.php" class="btn-small">Book Now</a>
+        <div class="hero-info">
+            <div class="info-box">☎ 0936-995-0038</div>
+            <div class="info-box">🕒 1PM – 3AM</div>
+            <div class="info-box">📍 Kawit, Cavite</div>
         </div>
 
     </div>
+</section>
+
+<!-- SIGNATURE SERVICES (NO POPUP, DIRECT DETAILS) -->
+<section class="section">
+
+<h2>Mizpah Signature Services</h2>
+
+<div class="service-grid">
+
+    <div class="service-card">
+        <h3>Swedish Massage</h3>
+        <p class="desc">Relaxing full body massage using light to medium pressure.</p>
+        <p class="time">1–2 hrs</p>
+        <p class="price">₱600</p>
+        <a href="booking-guest.php" class="btn-small">Book Now</a>
+    </div>
+
+    <div class="service-card featured">
+        <div class="badge">Recommended</div>
+        <h3>Mizpah Signature</h3>
+        <p class="desc">Combination of Swedish, Shiatsu & deep tissue massage.</p>
+        <p class="time">1–2 hrs</p>
+        <p class="price">₱750</p>
+        <a href="booking-guest.php" class="btn-small">Book Now</a>
+    </div>
+
+    <div class="service-card">
+        <h3>Lymphatic Massage</h3>
+        <p class="desc">Detox massage that improves circulation & reduces swelling.</p>
+        <p class="time">1–2 hrs</p>
+        <p class="price">₱850</p>
+        <a href="booking-guest.php" class="btn-small">Book Now</a>
+    </div>
+
+</div>
 
 </section>
 
 <!-- PACKAGES -->
 <section class="section">
 
-    <h2>Mizpah Packages</h2>
+<h2>Mizpah Packages</h2>
 
-    <div class="package-grid">
+<div class="package-grid">
 
-        <!-- BRONZE -->
-        <div class="package-card bronze">
-            <h3>Bronze Package</h3>
-
-            <ul class="package-list">
-                <li>Swedish Massage</li>
-                <li>Body Scrub</li>
-                <li>Hot Stone</li>
-                <li>Milk Mask</li>
-                <li>Korean Face Mask</li>
-                <li>Foot Mask</li>
-            </ul>
-
-            <p class="duration">Duration: 1 hr 45 mins</p>
-            <strong>₱1,600</strong>
-        </div>
-
-        <!-- SILVER -->
-        <div class="package-card silver">
-            <h3>Silver Package</h3>
-
-            <ul class="package-list">
-                <li>MIZPAH Signature Massage</li>
-                <li>Body Scrub</li>
-                <li>Hot Stone</li>
-                <li>Milk Mask</li>
-                <li>Korean Face Mask</li>
-                <li>Foot Mask</li>
-            </ul>
-
-            <p class="duration">Duration: 1 hr 45 mins</p>
-            <strong>₱1,800</strong>
-        </div>
-
-        <!-- GOLD -->
-        <div class="package-card gold">
-            <h3>Gold Package</h3>
-
-            <ul class="package-list">
-                <li>MIZPAH Signature Massage</li>
-                <li>Body Scrub</li>
-                <li>Hot Stone</li>
-                <li>Head or Foot Massage</li>
-                <li>Milk Mask</li>
-                <li>Korean Face Mask</li>
-                <li>Foot Mask</li>
-            </ul>
-
-            <p class="duration">Duration: 2 hrs</p>
-            <strong>₱2,000</strong>
-        </div>
-
+    <div class="package-card bronze">
+        <h3>Bronze Package</h3>
+        <ul class="package-list">
+            <li>Swedish Massage</li>
+            <li>Body Scrub</li>
+            <li>Hot Stone</li>
+            <li>Face Mask</li>
+        </ul>
+        <strong>₱1,600</strong>
     </div>
+
+    <div class="package-card silver">
+        <h3>Silver Package</h3>
+        <ul class="package-list">
+            <li>Mizpah Signature Massage</li>
+            <li>Body Scrub</li>
+            <li>Hot Stone</li>
+            <li>Face Mask</li>
+        </ul>
+        <strong>₱1,800</strong>
+    </div>
+
+    <div class="package-card gold">
+        <h3>Gold Package</h3>
+        <ul class="package-list">
+            <li>Mizpah Signature Massage</li>
+            <li>Body Scrub</li>
+            <li>Hot Stone</li>
+            <li>Full Body Care</li>
+        </ul>
+        <strong>₱2,000</strong>
+    </div>
+
+</div>
+
+</section>
+
+<!-- POPULAR CHOICES -->
+<section class="section">
+
+<h2>Popular Choices</h2>
+<p class="subtitle">Our Guests' Favourites</p>
+
+<div class="popular-grid">
+
+    <div class="popular-card">
+        <span class="tag">Signature</span>
+        <img src="assets/images/popular/signature.jpg" alt="Mizpah Signature">
+
+        <h3>Mizpah Signature</h3>
+        <p>Our exclusive blend for ultimate relaxation</p>
+
+        <strong>₱750</strong>
+
+        <a href="booking-guest.php" class="btn-small">Book Now</a>
+    </div>
+
+    <div class="popular-card">
+        <span class="tag">Popular</span>
+        <img src="assets/images/popular/hotstone.jpg" alt="Hot Stone Combo">
+
+        <h3>Hot Stone Combo</h3>
+        <p>Melt away tension with heated basalt stones</p>
+
+        <strong>₱1,000</strong>
+
+        <a href="booking-guest.php" class="btn-small">Book Now</a>
+    </div>
+
+    <div class="popular-card">
+        <span class="tag">Add-On</span>
+        <img src="assets/images/popular/quick.jpg" alt="Quick Escape">
+
+        <h3>Quick Escape</h3>
+        <p>30-min relief for busy schedules</p>
+
+        <strong>₱350</strong>
+
+        <a href="booking-guest.php" class="btn-small">Book Now</a>
+    </div>
+
+</div>
 
 </section>
 
@@ -155,41 +187,46 @@ include 'includes/db.php';
 
     <p class="subtitle">A Different Kind of Wellness</p>
 
+    <p style="max-width:800px;margin:0 auto 30px;color:#aaa;">
+        Every detail crafted with your comfort in mind.
+    </p>
+
     <div class="why-grid">
 
         <div class="why-box">
             <h3>Extended Hours</h3>
-            <p>Mon–Fri 3PM–3AM, Sat–Sun 1PM–3AM.</p>
+            <p>Open late every day — Mon–Fri 3PM–3AM, Sat–Sun 1PM–3AM. We fit your schedule.</p>
         </div>
 
         <div class="why-box">
             <h3>Licensed Therapists</h3>
-            <p>Professionally certified experts.</p>
+            <p>Every therapist is professionally certified with years of hands-on experience.</p>
         </div>
 
         <div class="why-box">
             <h3>Clean & Safe</h3>
-            <p>Strict hygiene standards.</p>
+            <p>Pristine facilities with strict sanitization protocols for your peace of mind.</p>
         </div>
 
         <div class="why-box">
             <h3>Affordable Luxury</h3>
-            <p>Premium spa experience at fair price.</p>
+            <p>Premium wellness experiences at prices that make self-care accessible to everyone.</p>
         </div>
 
     </div>
 
+    <!-- PROMISE -->
     <div class="promise">
 
-        <h3>Our Promise</h3>
-        <p class="promise-title">Your Comfort is Our Priority</p>
+        <h3 style="color:#D6C29C;margin-bottom:5px;">Our Promise</h3>
+        <p style="color:#aaa;margin-bottom:25px;">Your Comfort is Our Priority</p>
 
         <div class="promise-grid">
 
             <ul class="promise-list">
-                <li>Licensed and trained therapists</li>
-                <li>Clean and safe environment</li>
-                <li>Luxury spa experience for all</li>
+                <li>1. Every therapist is professionally trained and licensed.</li>
+                <li>2. We maintain pristine facilities with strict hygiene protocols.</li>
+                <li>3. Luxury spa experiences at prices that make self-care accessible.</li>
             </ul>
 
             <div class="stats">
@@ -230,7 +267,6 @@ include 'includes/db.php';
 
 <!-- FOOTER -->
 <footer class="footer">
-
     <div class="footer-grid">
 
         <div>
@@ -256,12 +292,12 @@ include 'includes/db.php';
     <div class="footer-bottom">
         <p>© 2026 Mizpah Wellness Spa</p>
     </div>
-
 </footer>
 
 <script>
 window.addEventListener("scroll", function () {
-    document.querySelector(".site-header").classList.toggle("scrolled", window.scrollY > 50);
+    document.querySelector(".site-header")
+    .classList.toggle("scrolled", window.scrollY > 50);
 });
 </script>
 
