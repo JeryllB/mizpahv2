@@ -259,6 +259,74 @@ include 'includes/db.php';
 
 </section>
 
+<!-- RATINGS / TESTIMONIALS -->
+<section class="section ratings-section">
+
+    <h2>Guest Ratings</h2>
+    <p class="subtitle">What Our Clients Say</p>
+
+    <div class="rating-summary">
+        <div class="big-rating">4.9★</div>
+        <p>Based on 250+ happy guests</p>
+    </div>
+
+    <div class="ratings-grid">
+
+        <div class="rating-chat">
+            <div class="chat-top">
+                <div class="avatar">M</div>
+                <div>
+                    <h4>Maria G.</h4>
+                    <small>2 days ago</small>
+                </div>
+            </div>
+
+            <div class="stars">★★★★★</div>
+
+            <p>
+                Very relaxing ambiance and professional therapists.
+                Highly recommended!
+            </p>
+        </div>
+
+        <div class="rating-chat">
+            <div class="chat-top">
+                <div class="avatar">J</div>
+                <div>
+                    <h4>John R.</h4>
+                    <small>Last week</small>
+                </div>
+            </div>
+
+            <div class="stars">★★★★★</div>
+
+            <p>
+                The Mizpah Signature massage was amazing.
+                Will definitely come back.
+            </p>
+        </div>
+
+        <div class="rating-chat">
+            <div class="chat-top">
+                <div class="avatar">A</div>
+                <div>
+                    <h4>Angela T.</h4>
+                    <small>This month</small>
+                </div>
+            </div>
+
+            <div class="stars">★★★★★</div>
+
+            <p>
+                Clean place, friendly staff,
+                and premium experience.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
 <!-- CTA -->
 <section class="section">
     <h2>Ready to Relax?</h2>
