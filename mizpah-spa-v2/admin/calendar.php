@@ -7,57 +7,40 @@ header("Location: ../login.php");
 exit;
 }
 
-$month = date('m');
-$year = date('Y');
+/* ================= MONTH NAV ================= */
+$month = $_GET['month'] ?? date('m');
+$year  = $_GET['year'] ?? date('Y');
 
-$days = cal_days_in_month(CAL_GREGORIAN,$month,$year);
+$month = (int)$month;
+$year  = (int)$year;
+
 $firstDay = date('w', strtotime("$year-$month-01"));
+$days     = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
-/* TIME SLOTS */
-$slots = [
-"3:00 PM","4:00 PM","5:00 PM","6:00 PM","7:00 PM",
-"8:00 PM","9:00 PM","10:00 PM","11:00 PM",
-"12:00 AM","1:00 AM","2:00 AM"
-];
-
-/* GET BOOKINGS */
-$bookings = [];
-
+/* ================= BOOKINGS ================= */
 $get = mysqli_query($conn,"
-SELECT booking_date, booking_time
+SELECT customer_name, booking_date, booking_time, service
 FROM bookings
 ");
 
-while($row=mysqli_fetch_assoc($get)){
-$key = $row['booking_date']."|".$row['booking_time'];
+$bookings = [];
 
-if(!isset($bookings[$key])){
-$bookings[$key]=0;
+while($row = mysqli_fetch_assoc($get)){
+$date = $row['booking_date'];
+
+if(!isset($bookings[$date])){
+$bookings[$date] = [];
 }
 
-$bookings[$key]++;
+$bookings[$date][] = $row;
 }
 
-/* DAY STATUS CALC */
-function getDayStatus($date,$slots,$bookings){
-
-$totalFull = 0;
-
-foreach($slots as $slot){
-$key = $date."|".$slot;
-
-$count = $bookings[$key] ?? 0;
-
-if($count >= 6){
-$totalFull++;
+/* ================= STATUS ================= */
+function getStatus($count){
+if($count >= 8) return 'full';
+if($count > 0) return 'partial';
+return 'available';
 }
-}
-
-if($totalFull == count($slots)) return "full";
-if($totalFull > 0) return "partial";
-return "available";
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -69,24 +52,40 @@ return "available";
 
 <style>
 
+/* IMPORTANT FIX FOR SIDEBAR */
 .main{
 margin-left:250px;
-padding:35px;
+padding:30px;
 background:#0b0b0b;
-color:#fff;
 min-height:100vh;
+color:#fff;
 }
 
+/* HEADER */
 h1{
 color:#D6C29C;
 margin-bottom:20px;
 }
 
+/* NAV MONTH */
+.nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:15px;
+}
+
+.nav a{
+color:#D6C29C;
+text-decoration:none;
+font-weight:700;
+}
+
 /* CALENDAR */
-.calendar-box{
+.calendar{
 background:#161616;
 padding:20px;
-border-radius:16px;
+border-radius:14px;
 border:1px solid rgba(214,194,156,.12);
 }
 
@@ -95,16 +94,21 @@ width:100%;
 border-spacing:8px;
 }
 
+th{
+color:#D6C29C;
+font-size:13px;
+padding:8px;
+}
+
 td{
 background:#1a1a1a;
-height:90px;
+height:95px;
 border-radius:10px;
 padding:8px;
+vertical-align:top;
 cursor:pointer;
 position:relative;
 transition:.2s;
-text-align:left;
-vertical-align:top;
 }
 
 td:hover{
@@ -112,35 +116,30 @@ transform:scale(1.03);
 border:1px solid #D6C29C;
 }
 
-/* STATUS COLORS */
-.available{border:1px solid rgba(0,255,120,.3);}
-.partial{border:1px solid rgba(255,200,0,.4);}
-.full{border:1px solid rgba(255,80,80,.5); opacity:.6;}
-
-.num{
+.day{
 font-size:13px;
 color:#fff;
 opacity:.8;
 }
 
-.legend{
-display:flex;
-gap:15px;
-margin-bottom:15px;
-font-size:13px;
-}
-
+/* DOT INDICATOR */
 .dot{
-width:10px;
-height:10px;
+width:8px;
+height:8px;
 border-radius:50%;
-display:inline-block;
-margin-right:5px;
+position:absolute;
+top:10px;
+right:10px;
 }
 
-.green{background:#2ecc71;}
-.yellow{background:#f1c40f;}
-.red{background:#e74c3c;}
+.available .dot{background:#2ecc71;}
+.partial .dot{background:#f1c40f;}
+.full .dot{background:#e74c3c;}
+
+/* STATUS BORDER */
+.available{border:1px solid rgba(46,204,113,.3);}
+.partial{border:1px solid rgba(241,196,15,.4);}
+.full{border:1px solid rgba(231,76,60,.4);opacity:.6;}
 
 /* MODAL */
 .modal{
@@ -148,32 +147,35 @@ display:none;
 position:fixed;
 inset:0;
 background:rgba(0,0,0,.7);
+z-index:2000;
 }
 
 .modal-content{
 background:#161616;
 margin:8% auto;
-padding:25px;
-width:420px;
-border-radius:14px;
+padding:20px;
+width:400px;
+border-radius:12px;
 border:1px solid rgba(214,194,156,.2);
+max-height:70vh;
+overflow:auto;
 }
 
 .close{
 float:right;
 cursor:pointer;
+font-size:20px;
 }
 
-.slot{
-display:flex;
-justify-content:space-between;
-padding:6px 0;
+.item{
+padding:10px;
 border-bottom:1px solid rgba(255,255,255,.05);
 font-size:13px;
 }
 
-.fullslot{color:#ff6b6b;}
-.availslot{color:#7dffaf;}
+.item strong{
+color:#D6C29C;
+}
 
 </style>
 </head>
@@ -184,15 +186,17 @@ font-size:13px;
 
 <div class="main">
 
-<h1>Realtime Booking Calendar</h1>
+<h1>Booking Calendar</h1>
 
-<div class="legend">
-<span><span class="dot green"></span>Available</span>
-<span><span class="dot yellow"></span>Partial</span>
-<span><span class="dot red"></span>Fully Booked</span>
+<div class="nav">
+<a href="?month=<?= $month-1 ?>&year=<?= $year ?>">← Prev</a>
+
+<h3><?= date("F Y", strtotime("$year-$month-01")) ?></h3>
+
+<a href="?month=<?= $month+1 ?>&year=<?= $year ?>">Next →</a>
 </div>
 
-<div class="calendar-box">
+<div class="calendar">
 
 <table>
 
@@ -214,11 +218,13 @@ for($d=1;$d<=$days;$d++){
 
 $date = "$year-".str_pad($month,2,'0',STR_PAD_LEFT)."-".str_pad($d,2,'0',STR_PAD_LEFT);
 
-$status = getDayStatus($date,$slots,$bookings);
+$dayBookings = $bookings[$date] ?? [];
+$status = getStatus(count($dayBookings));
 
 echo "
 <td class='$status' onclick=\"openModal('$date')\">
-<div class='num'>$d</div>
+<div class='day'>$d</div>
+<span class='dot'></span>
 </td>
 ";
 
@@ -243,10 +249,10 @@ echo "</tr><tr>";
 
 <div class="modal-content">
 
-<span class="close" onclick="close()">&times;</span>
+<span class="close" onclick="closeModal()">&times;</span>
 
-<h2 id="date"></h2>
-<div id="slots"></div>
+<h3 id="date"></h3>
+<div id="list"></div>
 
 </div>
 
@@ -254,40 +260,41 @@ echo "</tr><tr>";
 
 <script>
 
-const slots = <?= json_encode($slots) ?>;
-const bookings = <?= json_encode($bookings) ?>;
+let bookings = <?= json_encode($bookings) ?>;
 
 function openModal(date){
 
 document.getElementById('modal').style.display='block';
 document.getElementById('date').innerText=date;
 
-let html="";
+let data = bookings[date] ?? [];
 
-slots.forEach(s=>{
+let html = "";
 
-let key = date+"|"+s;
-let count = bookings[key] ?? 0;
-
-if(count >= 6){
-html += `<div class='slot fullslot'>${s} - FULL (6/6)</div>`;
+if(data.length === 0){
+html = "<p>No bookings</p>";
 }else{
-html += `<div class='slot availslot'>${s} - Available (${count}/6)</div>`;
-}
-
+data.forEach(b=>{
+html += `
+<div class="item">
+<strong>${b.customer_name}</strong><br>
+${b.service}<br>
+${b.booking_time}
+</div>
+`;
 });
-
-document.getElementById('slots').innerHTML=html;
-
 }
 
-function close(){
+document.getElementById('list').innerHTML = html;
+}
+
+function closeModal(){
 document.getElementById('modal').style.display='none';
 }
 
-window.onclick=function(e){
-if(e.target==document.getElementById('modal')){
-close();
+window.onclick = function(e){
+if(e.target == document.getElementById('modal')){
+closeModal();
 }
 }
 
