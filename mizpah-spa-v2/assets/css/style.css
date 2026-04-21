@@ -107,6 +107,7 @@ color:#ccc;
 margin:15px 0;
 }
 
+
 .hero-info{
 display:flex;
 gap:20px;
@@ -118,6 +119,37 @@ margin-top:20px;
 .info-box{
 color:#ddd;
 font-size:14px;
+}
+
+.hero-content{
+text-align:center;
+}
+
+.hero-logo{
+width:260px;
+max-width:80%;
+display:block;
+margin:0 auto 10px; /* keep center */
+transform: translateY(10px); /* 👈 eto ang pababa */
+filter:drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+}
+
+.hero-logo{
+animation: glowPulse 2.5s ease-in-out infinite;
+will-change: filter;
+transform: translateZ(0); /* 🔥 fixes shaking/movement */
+}
+
+@keyframes glowPulse{
+0%{
+filter: drop-shadow(0 0 5px rgba(214,194,156,0.25));
+}
+50%{
+filter: drop-shadow(0 0 16px rgba(214,194,156,0.75));
+}
+100%{
+filter: drop-shadow(0 0 5px rgba(214,194,156,0.25));
+}
 }
 
 /* ================= SECTION ================= */
@@ -621,7 +653,7 @@ color:#777;
 font-size:13px;
 }
 
-/* ================= RATINGS SECTION (FIXED CLEAN) ================= */
+/* ================= RATINGS SECTION ================= */
 
 .ratings-section{
 padding:80px 8%;
@@ -655,7 +687,7 @@ max-width:1100px;
 margin:auto;
 }
 
-/* CHAT CARD */
+/* CARD */
 .rating-chat{
 background:#161616;
 border:2px solid rgba(214,194,156,0.18);
@@ -672,7 +704,7 @@ transform:translateY(-8px);
 border-color:#D6C29C;
 }
 
-/* CHAT TAIL */
+/* TAIL */
 .rating-chat::after{
 content:"";
 position:absolute;
@@ -696,7 +728,6 @@ padding-bottom:14px;
 border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
-/* AVATAR */
 .avatar{
 width:50px;
 height:50px;
@@ -710,7 +741,6 @@ justify-content:center;
 flex-shrink:0;
 }
 
-/* NAME */
 .chat-top h4{
 margin:0;
 color:#fff;
@@ -741,6 +771,71 @@ color:#bbb;
 font-size:14px;
 line-height:1.7;
 margin:0;
+}
+
+/* ================= REVIEW FORM ================= */
+
+.rating-form{
+max-width:520px;
+margin:60px auto 0;
+padding:30px;
+background:linear-gradient(145deg,#111,#0c0c0c);
+border:1px solid rgba(214,194,156,0.2);
+border-radius:22px;
+text-align:left;
+}
+
+.rating-form h3{
+color:#D6C29C;
+text-align:center;
+margin-bottom:20px;
+font-family:'Playfair Display',serif;
+}
+
+/* INPUTS */
+.rating-form input,
+.rating-form select,
+.rating-form textarea{
+width:100%;
+padding:12px 14px;
+margin:10px 0;
+background:#0b0b0b;
+border:1px solid rgba(255,255,255,0.08);
+color:#fff;
+border-radius:12px;
+font-size:14px;
+outline:none;
+transition:0.3s ease;
+}
+
+.rating-form input:focus,
+.rating-form select:focus,
+.rating-form textarea:focus{
+border-color:#D6C29C;
+}
+
+/* TEXTAREA */
+.rating-form textarea{
+height:110px;
+resize:none;
+}
+
+/* BUTTON */
+.rating-form button{
+width:100%;
+padding:12px;
+margin-top:12px;
+background:#D6C29C;
+color:#111;
+border:none;
+border-radius:12px;
+font-weight:700;
+cursor:pointer;
+transition:0.3s ease;
+}
+
+.rating-form button:hover{
+background:#fff;
 }
 
 /* ================= RESPONSIVE ================= */

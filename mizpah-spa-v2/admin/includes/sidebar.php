@@ -11,6 +11,7 @@
 <a href="therapists.php">Therapists</a>
 <a href="users.php">Users</a>
 <a href="calendar.php">Calendar</a>
+<a href="ratings.php">Ratings</a>
 <a href="logout.php">Logout</a>
 
 </div>

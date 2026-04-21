@@ -34,22 +34,24 @@ include 'includes/db.php';
 <section class="hero">
     <div class="hero-content">
 
-        <h1 class="hero-title-white">Exquisite Comfort</h1>
-        <h2 class="hero-title-gold">Exceptional Care</h2>
+    <img src="assets/images/logo.png" alt="Mizpah Logo" class="hero-logo">
 
-        <p class="hero-text">
-            Kawit's premier wellness sanctuary — where relaxation meets luxury experience.
-        </p>
+    <h1 class="hero-title-white">Exquisite Comfort</h1>
+    <h2 class="hero-title-gold">Exceptional Care</h2>
 
-        <a href="booking-guest.php" class="btn-primary">Book Now</a>
+    <p class="hero-text">
+        Kawit's premier wellness sanctuary — where relaxation meets luxury experience.
+    </p>
 
-        <div class="hero-info">
-            <div class="info-box">☎ 0936-995-0038</div>
-            <div class="info-box">🕒 1PM – 3AM</div>
-            <div class="info-box">📍 Kawit, Cavite</div>
-        </div>
+    <a href="booking-guest.php" class="btn-primary">Book Now</a>
 
+    <div class="hero-info">
+        <div class="info-box">☎ 0936-995-0038</div>
+        <div class="info-box">🕒 1PM – 3AM</div>
+        <div class="info-box">📍 Kawit, Cavite</div>
     </div>
+
+</div>
 </section>
 
 <!-- SIGNATURE SERVICES (NO POPUP, DIRECT DETAILS) -->
@@ -327,6 +329,47 @@ include 'includes/db.php';
 
 </section>
 
+<div class="ratings-section">
+
+    <h2>Customer Reviews</h2>
+
+    <div class="rating-summary">
+        <div class="big-rating">4.8</div>
+        <p>Based on customer feedback</p>
+    </div>
+
+    <div class="ratings-grid" id="ratingsBox">
+        Loading reviews...
+    </div>
+
+    <hr style="margin:40px 0; border:1px solid #222">
+
+    <!-- WRITE REVIEW FORM -->
+    <div class="rating-form">
+        <h3>Leave a Review</h3>
+
+        <form action="submit_rating.php" method="POST">
+
+            <input type="text" name="name" placeholder="Your Name" required>
+
+            <select name="rating" required>
+                <option value="">Rating</option>
+                <option value="5">★★★★★</option>
+                <option value="4">★★★★</option>
+                <option value="3">★★★</option>
+                <option value="2">★★</option>
+                <option value="1">★</option>
+            </select>
+
+            <textarea name="message" placeholder="Your review..." required></textarea>
+
+            <button type="submit">Submit Review</button>
+
+        </form>
+    </div>
+
+</div>
+
 <!-- CTA -->
 <section class="section">
     <h2>Ready to Relax?</h2>
@@ -367,6 +410,19 @@ window.addEventListener("scroll", function () {
     document.querySelector(".site-header")
     .classList.toggle("scrolled", window.scrollY > 50);
 });
+</script>
+
+<script>
+function loadRatings(){
+    fetch("fetch_ratings.php")
+    .then(res => res.text())
+    .then(data => {
+        document.getElementById("ratingsBox").innerHTML = data;
+    });
+}
+
+loadRatings(); // initial load
+setInterval(loadRatings, 3000); // refresh every 3 seconds
 </script>
 
 </body>
