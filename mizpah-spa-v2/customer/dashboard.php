@@ -73,14 +73,14 @@ font-weight:700
 <body>
 
 <header>
-<div class="logo">Mizpah Spa</div>
+<div class="logo">Mizpah Wellness Spa</div>
 <nav>
 <a href="dashboard.php">Dashboard</a>
 <a href="booking.php">Book</a>
 <a href="mybookings.php">My Bookings</a>
 <a href="notifications.php">Notifications</a>
 <a href="profile.php">Profile</a>
-<a href="../logout.php">Logout</a>
+<a href="logout.php">Logout</a>
 </nav>
 </header>
 

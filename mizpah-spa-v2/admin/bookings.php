@@ -68,6 +68,7 @@ ORDER BY booking_date DESC, booking_time DESC, id DESC
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Bookings</title>
+
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <style>
@@ -80,9 +81,7 @@ flex-wrap:wrap;
 margin-bottom:20px;
 }
 
-.topbar h1{
-margin:0;
-}
+.topbar h1{margin:0;}
 
 .filters{
 display:flex;
@@ -146,7 +145,7 @@ overflow:auto;
 table{
 width:100%;
 border-collapse:collapse;
-min-width:1000px;
+min-width:1100px;
 }
 
 th{
@@ -164,9 +163,7 @@ font-size:14px;
 vertical-align:top;
 }
 
-tr:hover{
-background:#121212;
-}
+tr:hover{background:#121212;}
 
 .badge{
 padding:6px 10px;
@@ -180,6 +177,10 @@ display:inline-block;
 .confirmed{background:#173527;color:#7dffaf;}
 .completed{background:#1a2c4b;color:#8fc5ff;}
 .cancelled{background:#3b1717;color:#ff9e9e;}
+
+/* ✅ ADDED PAYMENT BADGE */
+.cash{background:#2d3b2f;color:#7dffaf;}
+.gcash{background:#1e2a3b;color:#8fc5ff;}
 
 .actions{
 display:flex;
@@ -275,6 +276,10 @@ align-items:flex-start;
 <th>Service</th>
 <th>Schedule</th>
 <th>Pax</th>
+
+<!-- ✅ ADDED -->
+<th>Payment</th>
+
 <th>Status</th>
 <th>Action</th>
 </tr>
@@ -282,6 +287,7 @@ align-items:flex-start;
 <?php while($row=mysqli_fetch_assoc($bookings)) { 
 
 $statusClass = strtolower($row['status']);
+$pay = strtolower($row['payment_method'] ?? 'cash');
 ?>
 
 <tr>
@@ -302,6 +308,13 @@ $statusClass = strtolower($row['status']);
 </td>
 
 <td><?= $row['pax'] ?? 1 ?></td>
+
+<!-- ✅ ADDED PAYMENT COLUMN -->
+<td>
+<span class="badge <?= $pay ?>">
+<?= htmlspecialchars($row['payment_method'] ?? 'Cash') ?>
+</span>
+</td>
 
 <td>
 <span class="badge <?= $statusClass ?>">

@@ -25,16 +25,19 @@ if(isset($_POST['submit_booking'])){
     $pax      = mysqli_real_escape_string($conn,$_POST['pax']);
     $notes    = mysqli_real_escape_string($conn,$_POST['notes']);
 
-    // FIXED: therapist_id (hindi therapist)
+    // FIXED: therapist_id
     $therapist_id = mysqli_real_escape_string($conn,$_POST['therapist'] ?? '');
+
+    // ✅ ADDED: payment method
+    $payment_method = mysqli_real_escape_string($conn,$_POST['payment_method']);
 
     // addons FIX
     $addons = isset($_POST['addons']) ? mysqli_real_escape_string($conn,$_POST['addons']) : "";
 
     mysqli_query($conn,"INSERT INTO bookings
-    (user_id,customer_name,phone,service,duration,price,booking_date,booking_time,pax,addons,therapist_id,notes,status)
+    (user_id,customer_name,phone,service,duration,price,booking_date,booking_time,pax,addons,therapist_id,payment_method,notes,status)
     VALUES
-    ('$user_id','$name','$phone','$service','$duration','$price','$date','$time','$pax','$addons','$therapist_id','$notes','Pending')
+    ('$user_id','$name','$phone','$service','$duration','$price','$date','$time','$pax','$addons','$therapist_id','$payment_method','$notes','Pending')
     ");
 
     echo "<script>alert('Booking Successful!');window.location='mybookings.php';</script>";
@@ -139,7 +142,7 @@ cursor:pointer;
 
 <input type="hidden" name="customer_name" value="<?= $user_name ?>">
 
-<!-- THERAPIST (FIXED - therapist_id) -->
+<!-- THERAPIST -->
 <div class="section">
 <div class="title">Preferred Therapist (Optional)</div>
 
@@ -155,16 +158,13 @@ cursor:pointer;
         <option value="<?= $row['id'] ?>">
             <?= htmlspecialchars($row['name']) ?>
         </option>
-    <?php
-        }
-    } else {
+    <?php } } else {
         echo '<option disabled>No therapists available</option>';
-    }
-    ?>
+    } ?>
 </select>
 </div>
 
-<!-- SERVICES (UNCHANGED UI) -->
+<!-- SERVICES -->
 <div class="section">
 <div class="title">Services</div>
 
@@ -203,7 +203,7 @@ cursor:pointer;
 </div>
 </div>
 
-<!-- PACKAGES (UNCHANGED) -->
+<!-- PACKAGES -->
 <div class="section">
 <div class="title">Mizpah Packages (Fixed Duration)</div>
 
@@ -211,35 +211,20 @@ cursor:pointer;
 
 <div class="card" onclick="selectPackage(this,'Bronze Package','1 hr 45 mins','1600')">
 <b>Bronze Package</b>
-<div class="desc">
-Swedish massage<br>
-Body scrub<br>
-Hot stone<br>
-Milk mask<br>
-Korean face mask<br>
-Foot mask
-</div>
-<div class="price">₱1,600 • 1 hr 45 mins</div>
+<div class="desc">Full spa treatment set</div>
+<div class="price">₱1,600</div>
 </div>
 
 <div class="card" onclick="selectPackage(this,'Silver Package','1 hr 45 mins','1800')">
 <b>Silver Package</b>
-<div class="desc">
-Mizpah Signature massage<br>
-Body scrub + Hot stone<br>
-Milk mask + Face mask + Foot mask
-</div>
-<div class="price">₱1,800 • 1 hr 45 mins</div>
+<div class="desc">Premium spa experience</div>
+<div class="price">₱1,800</div>
 </div>
 
 <div class="card" onclick="selectPackage(this,'Gold Package','2 hrs','2000')">
 <b>Gold Package</b>
-<div class="desc">
-Signature massage<br>
-Body scrub + Hot stone<br>
-Head or Foot massage + full masks
-</div>
-<div class="price">₱2,000 • 2 hrs</div>
+<div class="desc">Luxury spa package</div>
+<div class="price">₱2,000</div>
 </div>
 
 </div>
@@ -289,6 +274,13 @@ Body Scrub <div class="desc">Skin renewal treatment</div><div class="price">₱7
 <option>3:00 PM</option><option>4:00 PM</option>
 <option>5:00 PM</option><option>6:00 PM</option>
 <option>7:00 PM</option><option>8:00 PM</option>
+</select>
+
+<!-- ✅ ADDED PAYMENT METHOD -->
+<label>Mode of Payment</label>
+<select name="payment_method" required>
+    <option value="Cash">Cash</option>
+    <option value="GCash">GCash</option>
 </select>
 
 <label>Pax</label>

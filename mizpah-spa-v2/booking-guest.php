@@ -17,6 +17,10 @@ $time     = mysqli_real_escape_string($conn,$_POST['booking_time']);
 $pax      = mysqli_real_escape_string($conn,$_POST['pax']);
 $notes    = mysqli_real_escape_string($conn,$_POST['notes']);
 
+/* ✅ ADDED: PAYMENT METHOD */
+$payment_method = mysqli_real_escape_string($conn,$_POST['payment_method']);
+
+/* ADDONS (UNCHANGED) */
 $addons = isset($_POST['addons']) ? $_POST['addons'] : "";
 if(is_array($addons)){
     $addons = implode(", ", $addons);
@@ -38,9 +42,9 @@ if($row['total'] >= 6){
 
 /* INSERT BOOKING */
 mysqli_query($conn,"INSERT INTO bookings
-(customer_name,phone,service,duration,price,booking_date,booking_time,pax,addons,notes,status)
+(customer_name,phone,service,duration,price,booking_date,booking_time,pax,addons,payment_method,notes,status)
 VALUES
-('$name','$phone','$service','$duration','$price','$date','$time','$pax','$addons','$notes','Pending')
+('$name','$phone','$service','$duration','$price','$date','$time','$pax','$addons','$payment_method','$notes','Pending')
 ");
 
 /* SAVE SESSION FOR THANK YOU PAGE */
@@ -285,6 +289,13 @@ color:#000;
 
 <label>Phone</label>
 <input name="phone" required>
+
+<!-- ✅ ADDED PAYMENT METHOD -->
+<label>Mode of Payment</label>
+<select name="payment_method" required>
+    <option value="Cash">Cash</option>
+    <option value="GCash">GCash</option>
+</select>
 
 <label>Date</label>
 <input type="date" name="booking_date" required>

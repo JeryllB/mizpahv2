@@ -84,7 +84,7 @@ color:#777;
 
 <div class="container">
 
-<h1>Booking Confirmed 🎉</h1>
+<h1>Booking Confirmed </h1>
 
 <div class="box">
 <p><b>Name:</b> <?= htmlspecialchars($name) ?></p>
