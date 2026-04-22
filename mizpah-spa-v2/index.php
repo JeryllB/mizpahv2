@@ -47,7 +47,7 @@ include 'includes/db.php';
 
     <div class="hero-info">
         <div class="info-box">☎ 0936-995-0038</div>
-        <div class="info-box">🕒 1PM – 3AM</div>
+        <div class="info-box">🕒 Mon–Fri 3PM–3AM · Sat–Sun 1PM–3AM</div>
         <div class="info-box">📍 Kawit, Cavite</div>
     </div>
 

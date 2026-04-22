@@ -191,17 +191,31 @@ margin:auto;
 }
 
 .service-card{
-background:#141414;
-padding:25px;
-border-radius:18px;
-border:1px solid rgba(255,255,255,0.08);
-text-align:center;
-transition:0.3s ease;
+background:rgba(22,22,22,0.75);
+backdrop-filter:blur(12px);
+padding:22px;
+border-radius:16px;
+border:1px solid rgba(214,194,156,0.12);
+transition:0.35s ease;
+position:relative;
+overflow:hidden;
+}
+
+.service-card::before{
+content:"";
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:2px;
+background:linear-gradient(90deg,transparent,#D6C29C,transparent);
+opacity:0.3;
 }
 
 .service-card:hover{
-transform:translateY(-6px);
+transform:translateY(-8px) scale(1.01);
 border-color:#D6C29C;
+box-shadow:0 0 30px rgba(214,194,156,0.25);
 }
 
 .service-card{
@@ -226,10 +240,10 @@ margin-bottom:8px;
 }
 
 .service-card .price{
-font-size:24px;
-color:#fff;
+color:#D6C29C;
+font-size:18px;
 font-weight:700;
-margin-bottom:12px;
+letter-spacing:1px;
 }
 
 /* FEATURED */

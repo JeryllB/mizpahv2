@@ -227,7 +227,7 @@ font-weight:700;
 
 <div class="service-card">
 <h3>Swedish Massage</h3>
-<p class="desc">Gentle to moderate pressure with long strokes for relaxation and circulation.</p>
+<p class="desc">A gentle, soothing massage using light to moderate pressure, designed to melt away stress and promote deep relaxation.</p>
 <div class="time">1hr • 1.5hr • 2hr</div>
 <div class="price">₱600 - ₱1,150</div>
 <a href="booking-guest.php" class="btn">Book</a>
@@ -235,7 +235,7 @@ font-weight:700;
 
 <div class="service-card">
 <h3>Mizpah Signature</h3>
-<p class="desc">Premium blend of Swedish, Shiatsu & aromatherapy for full body rejuvenation.</p>
+<p class="desc">Our most requested service. An exclusive blend of Swedish, Shiatsu, deep tissue, stretching, and facial massage — adaptable from light to firm pressure. Includes a specialized tool to release muscle tension. Perfect if you have specific areas of concern.</p>
 <div class="time">1hr • 1.5hr • 2hr</div>
 <div class="price">₱750 - ₱1,450</div>
 <a href="booking-guest.php" class="btn">Book</a>
@@ -243,7 +243,7 @@ font-weight:700;
 
 <div class="service-card">
 <h3>Thai Massage</h3>
-<p class="desc">Stretching + acupressure for flexibility and pain relief.</p>
+<p class="desc">Performed dry or with oil, this therapeutic massage combines firm finger pressure and guided stretching to improve flexibility and reduce muscle tightness.</p>
 <div class="time">1hr • 1.5hr • 2hr</div>
 <div class="price">₱650 - ₱1,250</div>
 <a href="booking-guest.php" class="btn">Book</a>
@@ -251,7 +251,7 @@ font-weight:700;
 
 <div class="service-card">
 <h3>Shiatsu Dry Massage</h3>
-<p class="desc">Japanese pressure therapy without oil for energy balance.</p>
+<p class="desc">Performed dry or with oil, this therapeutic massage combines firm finger pressure and guided stretching to improve flexibility and reduce muscle tightness.</p>
 <div class="time">1hr • 1.5hr • 2hr</div>
 <div class="price">₱650 - ₱1,250</div>
 <a href="booking-guest.php" class="btn">Book</a>
@@ -259,7 +259,7 @@ font-weight:700;
 
 <div class="service-card">
 <h3>Lymphatic Massage</h3>
-<p class="desc">Detox massage to reduce swelling and improve immunity.</p>
+<p class="desc">A firm, results-driven massage using a specialized tool and technique to stimulate lymphatic drainage, reduce bloating, and flush excess water from the body.</p>
 <div class="time">1hr • 1.5hr • 2hr</div>
 <div class="price">₱850 - ₱1,650</div>
 <a href="booking-guest.php" class="btn">Book</a>
@@ -267,7 +267,7 @@ font-weight:700;
 
 <div class="service-card">
 <h3>Prenatal / Postpartum</h3>
-<p class="desc">Safe massage for pregnant and postnatal mothers.</p>
+<p class="desc">A safe, specialized therapy designed for expectant and new mothers to ease muscle tension, reduce stress, and support recovery during and after pregnancy.</p>
 <div class="time">1hr • 1.5hr • 2hr</div>
 <div class="price">₱850 - ₱1,650</div>
 <a href="booking-guest.php" class="btn">Book</a>
@@ -280,23 +280,44 @@ font-weight:700;
 
 <div class="package-grid">
 
-<div class="package-card bronze">
-<h3>Bronze Package</h3>
-<div class="desc">Swedish Massage + Body Scrub + Hot Stone + Masks</div>
-<span class="price">₱1,600</span>
-</div>
+    <div class="package-card bronze">
+        <h3>Bronze Package</h3>
+        <div class="desc">
+            Swedish Massage • Body Scrub • Hot Stone Therapy • Milk Mask • Korean Face Mask • Foot Mask
+            <br><br>
+            <small>
+                A relaxing starter package designed to relieve muscle tension, gently exfoliate the skin,
+                and refresh your face and feet for a full-body light rejuvenation experience.
+            </small>
+        </div>
+        <span class="price">₱1,600</span>
+    </div>
 
-<div class="package-card silver">
-<h3>Silver Package</h3>
-<div class="desc">Signature Massage + Body Scrub + Hot Stone + Masks</div>
-<span class="price">₱1,800</span>
-</div>
+    <div class="package-card silver">
+        <h3>Silver Package</h3>
+        <div class="desc">
+            Mizpah Signature Massage • Body Scrub • Hot Stone Therapy • Milk Mask • Korean Face Mask • Foot Mask
+            <br><br>
+            <small>
+                A more enhanced spa experience combining deeper therapeutic massage techniques with full-body
+                exfoliation and skin nourishment for better relaxation and glow.
+            </small>
+        </div>
+        <span class="price">₱1,800</span>
+    </div>
 
-<div class="package-card gold">
-<h3>Gold Package</h3>
-<div class="desc">Full Signature + Head/Foot + Complete Spa Care</div>
-<span class="price">₱2,000</span>
-</div>
+    <div class="package-card gold">
+        <h3>Gold Package</h3>
+        <div class="desc">
+            Mizpah Signature Massage • Body Scrub • Hot Stone Therapy • Head or Foot Massage • Milk Mask • Korean Face Mask • Foot Mask
+            <br><br>
+            <small>
+                Our premium full spa experience with complete body care, stress relief focus, and deep relaxation
+                from head to toe. Perfect for total rejuvenation and luxury pampering.
+            </small>
+        </div>
+        <span class="price">₱2,000</span>
+    </div>
 
 </div>
 
