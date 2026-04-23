@@ -8,96 +8,37 @@ if(!isset($_SESSION['user_id'])){
 }
 
 /* =========================
-   KPI COUNTS
+   BASIC COUNTS ONLY
 ========================= */
 $bookings = mysqli_fetch_assoc(mysqli_query($conn,"
-SELECT COUNT(*) total FROM bookings
+SELECT COUNT(*) as total FROM bookings
 "))['total'] ?? 0;
 
 $pending = mysqli_fetch_assoc(mysqli_query($conn,"
-SELECT COUNT(*) total FROM bookings WHERE status='Pending'
+SELECT COUNT(*) as total FROM bookings WHERE status='Pending'
 "))['total'] ?? 0;
 
 $confirmed = mysqli_fetch_assoc(mysqli_query($conn,"
-SELECT COUNT(*) total FROM bookings WHERE status='Confirmed'
+SELECT COUNT(*) as total FROM bookings WHERE status='Confirmed'
 "))['total'] ?? 0;
 
 $completed = mysqli_fetch_assoc(mysqli_query($conn,"
-SELECT COUNT(*) total FROM bookings WHERE status='Completed'
+SELECT COUNT(*) as total FROM bookings WHERE status='Completed'
 "))['total'] ?? 0;
-
-/* =========================
-   ESTIMATED REVENUE
-========================= */
-$result = mysqli_query($conn,"SELECT service,pax FROM bookings");
-$revenue = 0;
-
-while($row = mysqli_fetch_assoc($result)){
-
-    $service = strtolower($row['service']);
-    $pax = (int)($row['pax'] ?? 1);
-    if($pax <= 0) $pax = 1;
-
-    $price = 600;
-
-    if(str_contains($service,'swedish') && str_contains($service,'1.5')) $price = 850;
-    elseif(str_contains($service,'swedish') && str_contains($service,'2')) $price = 1150;
-
-    elseif(str_contains($service,'signature') && str_contains($service,'1.5')) $price = 1100;
-    elseif(str_contains($service,'signature') && str_contains($service,'2')) $price = 1450;
-    elseif(str_contains($service,'signature')) $price = 750;
-
-    elseif(str_contains($service,'thai') && str_contains($service,'1.5')) $price = 950;
-    elseif(str_contains($service,'thai') && str_contains($service,'2')) $price = 1250;
-    elseif(str_contains($service,'thai')) $price = 650;
-
-    elseif(str_contains($service,'shiatsu') && str_contains($service,'1.5')) $price = 950;
-    elseif(str_contains($service,'shiatsu') && str_contains($service,'2')) $price = 1250;
-    elseif(str_contains($service,'shiatsu')) $price = 650;
-
-    elseif(str_contains($service,'lymphatic') && str_contains($service,'1.5')) $price = 1250;
-    elseif(str_contains($service,'lymphatic') && str_contains($service,'2')) $price = 1650;
-    elseif(str_contains($service,'lymphatic')) $price = 850;
-
-    elseif(str_contains($service,'prenatal') && str_contains($service,'1.5')) $price = 1250;
-    elseif(str_contains($service,'prenatal') && str_contains($service,'2')) $price = 1650;
-    elseif(str_contains($service,'prenatal')) $price = 850;
-
-    elseif(str_contains($service,'bronze')) $price = 1600;
-    elseif(str_contains($service,'silver')) $price = 1800;
-    elseif(str_contains($service,'gold')) $price = 2000;
-
-    $revenue += ($price * $pax);
-}
-
-/* =========================
-   CHART DATA LAST 7 DAYS
-========================= */
-$graph = mysqli_query($conn,"
-SELECT DATE(booking_date) as date, COUNT(*) total
-FROM bookings
-GROUP BY DATE(booking_date)
-ORDER BY date DESC
-LIMIT 7
-");
-
-$labels = [];
-$data = [];
-
-while($row = mysqli_fetch_assoc($graph)){
-    $labels[] = date("M d", strtotime($row['date']));
-    $data[] = $row['total'];
-}
-
-$labels = array_reverse($labels);
-$data   = array_reverse($data);
 
 /* TODAY BOOKINGS */
 $today = date("Y-m-d");
 
 $todayBookings = mysqli_fetch_assoc(mysqli_query($conn,"
-SELECT COUNT(*) total FROM bookings
+SELECT COUNT(*) as total FROM bookings
 WHERE booking_date='$today'
+"))['total'] ?? 0;
+
+/* SIMPLE REVENUE ONLY (NO BREAKDOWN) */
+$revenue = mysqli_fetch_assoc(mysqli_query($conn,"
+SELECT SUM(price * pax) as total
+FROM bookings
+WHERE status='Completed'
 "))['total'] ?? 0;
 ?>
 
@@ -109,15 +50,14 @@ WHERE booking_date='$today'
 <title>Dashboard</title>
 
 <link rel="stylesheet" href="../assets/css/admin.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
 background:#0b0b0b;
 color:#fff;
+font-family:Poppins;
 }
 
-/* FIX SIDEBAR OVERLAP */
 .main{
 margin-left:250px;
 padding:35px;
@@ -128,102 +68,79 @@ min-height:100vh;
 display:flex;
 justify-content:space-between;
 align-items:center;
-gap:15px;
-flex-wrap:wrap;
 margin-bottom:25px;
+flex-wrap:wrap;
 }
 
 .page-top h1{
 margin:0;
-font-size:34px;
 color:#D6C29C;
+font-size:34px;
 }
 
 .page-top span{
-font-size:14px;
 color:#aaa;
+font-size:14px;
 }
 
 .cards{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:16px;
-margin-bottom:25px;
+gap:15px;
 }
 
 .card{
 background:#161616;
-padding:22px;
-border-radius:16px;
-border:1px solid rgba(214,194,156,.12);
+padding:20px;
+border-radius:14px;
+border:1px solid #222;
 }
 
 .card h3{
-font-size:14px;
 color:#D6C29C;
-margin-bottom:10px;
-font-weight:600;
-}
-
-.card p{
-font-size:30px;
-font-weight:700;
+font-size:13px;
 margin:0;
 }
 
-.grid-2{
-display:grid;
-grid-template-columns:2fr 1fr;
-gap:18px;
+.card p{
+font-size:28px;
+margin-top:10px;
+font-weight:bold;
 }
 
-.box{
+.quick{
+margin-top:25px;
 background:#161616;
-padding:22px;
-border-radius:16px;
-border:1px solid rgba(214,194,156,.12);
+padding:20px;
+border-radius:14px;
+border:1px solid #222;
 }
 
-.box h2{
-font-size:18px;
-margin-bottom:18px;
+.quick h2{
 color:#D6C29C;
+margin-bottom:15px;
 }
 
-.quick-list{
-display:flex;
-flex-direction:column;
-gap:12px;
-}
-
-.quick-item{
+.item{
 display:flex;
 justify-content:space-between;
-padding:12px 0;
-border-bottom:1px solid rgba(255,255,255,.05);
-font-size:14px;
+padding:10px 0;
+border-bottom:1px solid #222;
 }
 
-.quick-item:last-child{
+.item:last-child{
 border:none;
 }
 
-canvas{
-max-height:340px;
-}
-
-/* MOBILE */
-@media(max-width:1000px){
-
-.main{
-margin-left:0;
-padding:20px;
-}
-
-.grid-2{
-grid-template-columns:1fr;
-}
-
+.link{
+display:inline-block;
+margin-top:15px;
+padding:10px 15px;
+background:#D6C29C;
+color:#111;
+text-decoration:none;
+border-radius:10px;
+font-weight:bold;
 }
 </style>
 
@@ -231,20 +148,21 @@ grid-template-columns:1fr;
 
 <body>
 
-<?php include __DIR__ . '/includes/sidebar.php'; ?>
+<?php include 'includes/sidebar.php'; ?>
 
 <div class="main">
 
+<!-- HEADER -->
 <div class="page-top">
     <div>
         <h1>Dashboard</h1>
-        <span>Welcome back, Admin</span>
+        <span>Overview of Mizpah Wellness Spa</span>
     </div>
 
     <span><?= date("l, F d, Y") ?></span>
 </div>
 
-<!-- KPI -->
+<!-- CARDS -->
 <div class="cards">
 
 <div class="card">
@@ -268,102 +186,58 @@ grid-template-columns:1fr;
 </div>
 
 <div class="card">
-<h3>Today's Bookings</h3>
+<h3>Today Bookings</h3>
 <p><?= $todayBookings ?></p>
 </div>
 
 <div class="card">
-<h3>Estimated Revenue</h3>
+<h3>Total Revenue</h3>
 <p>₱<?= number_format($revenue,0) ?></p>
 </div>
 
 </div>
 
-<div class="grid-2">
+<!-- QUICK SUMMARY -->
+<div class="quick">
 
-<!-- CHART -->
-<div class="box">
-<h2>Bookings Overview</h2>
-<canvas id="chart"></canvas>
-</div>
-
-<!-- SIDE SUMMARY -->
-<div class="box">
 <h2>Quick Summary</h2>
 
-<div class="quick-list">
+<div class="item">
+<span>Total Bookings</span>
+<strong><?= $bookings ?></strong>
+</div>
 
-<div class="quick-item">
+<div class="item">
 <span>Pending Requests</span>
 <strong><?= $pending ?></strong>
 </div>
 
-<div class="quick-item">
-<span>Confirmed Guests</span>
+<div class="item">
+<span>Confirmed</span>
 <strong><?= $confirmed ?></strong>
 </div>
 
-<div class="quick-item">
+<div class="item">
 <span>Completed Sessions</span>
 <strong><?= $completed ?></strong>
 </div>
 
-<div class="quick-item">
-<span>Total Customers</span>
-<strong><?= $bookings ?></strong>
+<div class="item">
+<span>Today's Bookings</span>
+<strong><?= $todayBookings ?></strong>
 </div>
 
-<div class="quick-item">
+<div class="item">
 <span>Revenue</span>
 <strong>₱<?= number_format($revenue,0) ?></strong>
 </div>
 
-</div>
+<!-- LINK TO REPORTS -->
+<a href="reports.php" class="link">View Sales Report →</a>
 
 </div>
 
 </div>
-
-</div>
-
-<script>
-const ctx = document.getElementById('chart');
-
-new Chart(ctx,{
-type:'line',
-data:{
-labels: <?= json_encode($labels) ?>,
-datasets:[{
-label:'Bookings',
-data: <?= json_encode($data) ?>,
-borderColor:'#D6C29C',
-backgroundColor:'rgba(214,194,156,.12)',
-fill:true,
-tension:.4,
-pointRadius:4,
-pointHoverRadius:6
-}]
-},
-options:{
-responsive:true,
-plugins:{
-legend:{
-labels:{color:'#fff'}
-}
-},
-scales:{
-x:{
-ticks:{color:'#aaa'},
-grid:{color:'rgba(255,255,255,.04)'}
-},
-y:{
-ticks:{color:'#aaa'},
-grid:{color:'rgba(255,255,255,.04)'}
-}
-}
-}
-});
-</script>
 
 </body>
 </html>

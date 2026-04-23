@@ -8,173 +8,124 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 /* =========================
-   BED CHECK (6 LIMIT)
+   THERAPIST CONFLICT CHECK
 ========================= */
-function checkBeds($conn, $date, $time) {
+function hasConflict($conn, $therapist_id, $date, $time) {
 
     $q = mysqli_query($conn,"
-        SELECT COUNT(*) as total 
-        FROM bookings
-        WHERE booking_date='$date'
-        AND booking_time='$time'
-        AND status != 'Cancelled'
+        SELECT bt.id
+        FROM booking_therapists bt
+        JOIN bookings b ON b.id = bt.booking_id
+        WHERE bt.therapist_id='$therapist_id'
+        AND b.booking_date='$date'
+        AND b.booking_time='$time'
+        AND b.status != 'Cancelled'
     ");
 
-    $r = mysqli_fetch_assoc($q);
-
-    return $r['total'];
+    return mysqli_num_rows($q) > 0;
 }
 
 /* =========================
-   BED STATUS DISPLAY
+   ASSIGN / REMOVE THERAPIST
 ========================= */
-function bedStatus($count) {
+if (isset($_POST['ajax_assign'])) {
 
-    if ($count >= 6) return "🔴 Full ($count/6)";
-    if ($count >= 3) return "🟡 Busy ($count/6)";
-    return "🟢 Available ($count/6)";
-}
-
-/* =========================
-   SUGGEST AVAILABLE TIMES
-========================= */
-function suggestTimes($conn, $date) {
-
-    $times = ["10:00 AM","12:00 PM","2:00 PM","4:00 PM","6:00 PM","8:00 PM"];
-
-    $available = [];
-
-    foreach ($times as $time) {
-
-        $q = mysqli_query($conn,"
-            SELECT COUNT(*) as total
-            FROM bookings
-            WHERE booking_date='$date'
-            AND booking_time='$time'
-            AND status != 'Cancelled'
-        ");
-
-        $r = mysqli_fetch_assoc($q);
-
-        if ($r['total'] < 6) {
-            $available[] = [
-                "time" => $time,
-                "left" => 6 - $r['total']
-            ];
-        }
-    }
-
-    return $available;
-}
-
-/* =========================
-   STATUS UPDATE
-========================= */
-if (isset($_POST['update_status'])) {
-    $id = (int)$_POST['id'];
-    $status = mysqli_real_escape_string($conn, $_POST['status']);
-
-    mysqli_query($conn, "UPDATE bookings SET status='$status' WHERE id='$id'");
-    header("Location: bookings.php");
-    exit;
-}
-
-/* =========================
-   ASSIGN THERAPIST + CHECKS
-========================= */
-if (isset($_POST['assign_therapist'])) {
-
-    $id = (int)$_POST['id'];
+    $booking_id = (int)$_POST['booking_id'];
     $therapist_id = (int)$_POST['therapist_id'];
 
+    if ($therapist_id == 0) exit;
+
     $b = mysqli_fetch_assoc(mysqli_query($conn,"
-        SELECT booking_date, booking_time 
-        FROM bookings 
-        WHERE id=$id
+        SELECT booking_date, booking_time
+        FROM bookings
+        WHERE id='$booking_id'
     "));
 
     $date = $b['booking_date'];
     $time = $b['booking_time'];
 
-    $count = checkBeds($conn, $date, $time);
+    $check = mysqli_query($conn,"
+        SELECT id FROM booking_therapists
+        WHERE booking_id='$booking_id'
+        AND therapist_id='$therapist_id'
+    ");
 
-    if ($count >= 6) {
+    if (mysqli_num_rows($check) > 0) {
 
-        $_SESSION['error'] = "❌ Fully booked (6/6 beds) for this schedule.";
+        mysqli_query($conn,"
+            DELETE FROM booking_therapists
+            WHERE booking_id='$booking_id'
+            AND therapist_id='$therapist_id'
+        ");
 
     } else {
 
-        $conflict = mysqli_query($conn,"
-            SELECT id FROM bookings
-            WHERE therapist_id='$therapist_id'
-            AND booking_date='$date'
-            AND booking_time='$time'
-            AND id != '$id'
-        ");
-
-        if (mysqli_num_rows($conflict) > 0) {
-
-            $_SESSION['error'] = "❌ Therapist already booked on this time slot.";
-
-        } else {
-
-            mysqli_query($conn,"
-                UPDATE bookings 
-                SET therapist_id='$therapist_id'
-                WHERE id='$id'
-            ");
-
-            $_SESSION['success'] = "✅ Assigned successfully!";
+        if (hasConflict($conn, $therapist_id, $date, $time)) {
+            echo "CONFLICT";
+            exit;
         }
+
+        mysqli_query($conn,"
+            INSERT INTO booking_therapists (booking_id, therapist_id)
+            VALUES ('$booking_id','$therapist_id')
+        ");
     }
 
-    header("Location: bookings.php");
     exit;
 }
 
 /* =========================
-   FILTER
+   STATUS UPDATE + ⭐ RATING SYSTEM ADDED
 ========================= */
-$search = $_GET['search'] ?? '';
-$date   = $_GET['date'] ?? '';
+if (isset($_POST['update_status'])) {
 
-$where = " WHERE 1=1 ";
+    $id = (int)$_POST['id'];
+    $status = mysqli_real_escape_string($conn, $_POST['status']);
 
-if ($search != '') {
-    $s = mysqli_real_escape_string($conn, $search);
-    $where .= " AND (
-        customer_name LIKE '%$s%' OR
-        phone LIKE '%$s%' OR
-        service LIKE '%$s%' OR
-        status LIKE '%$s%'
-    )";
-}
+    mysqli_query($conn,"
+        UPDATE bookings 
+        SET status='$status' 
+        WHERE id='$id'
+    ");
 
-if ($date != '') {
-    $d = mysqli_real_escape_string($conn, $date);
-    $where .= " AND booking_date='$d'";
+    /* =========================
+       AUTO INSERT THERAPIST RATINGS
+       WHEN COMPLETED
+    ========================= */
+    if ($status == 'Completed') {
+
+        $q = mysqli_query($conn,"
+            SELECT therapist_id 
+            FROM booking_therapists
+            WHERE booking_id='$id'
+        ");
+
+        while ($t = mysqli_fetch_assoc($q)) {
+
+            $therapist_id = $t['therapist_id'];
+
+            // default rating (5 stars auto)
+            $rating = 5;
+
+            mysqli_query($conn,"
+                INSERT INTO therapist_ratings (booking_id, therapist_id, rating)
+                VALUES ('$id', '$therapist_id', '$rating')
+            ");
+        }
+    }
+
+    exit;
 }
 
 /* =========================
    DATA
 ========================= */
 $bookings = mysqli_query($conn,"
-SELECT bookings.*, therapists.name AS therapist_name
-FROM bookings
-LEFT JOIN therapists ON bookings.therapist_id = therapists.id
-$where
+SELECT * FROM bookings
 ORDER BY booking_date DESC, booking_time DESC
 ");
 
 $therapists = mysqli_query($conn,"SELECT * FROM therapists WHERE status='Active'");
-
-/* =========================
-   STATS
-========================= */
-$total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as c FROM bookings"))['c'];
-$pending = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as c FROM bookings WHERE status='Pending'"))['c'];
-$confirmed = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as c FROM bookings WHERE status='Confirmed'"))['c'];
-$completed = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as c FROM bookings WHERE status='Completed'"))['c'];
 ?>
 
 <!DOCTYPE html>
@@ -192,65 +143,12 @@ body{
     font-family:Poppins;
     background:#0b0b0b;
     color:#fff;
-    font-size:14px;
 }
 
 .main{
     margin-left:250px;
     padding:20px;
 }
-
-.topbar{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:10px;
-}
-
-input,select,button{
-    padding:10px;
-    border-radius:8px;
-    border:none;
-    font-size:13px;
-}
-
-input,select{
-    background:#161616;
-    color:#fff;
-    border:1px solid #333;
-}
-
-button{
-    background:#D6C29C;
-    color:#111;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.msg{
-    padding:10px;
-    border-radius:8px;
-    margin-bottom:10px;
-}
-.error{background:#3b1717;color:#ff9e9e;}
-.success{background:#173527;color:#7dffaf;}
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-    gap:10px;
-    margin-bottom:15px;
-}
-
-.stat{
-    background:#161616;
-    padding:12px;
-    border-radius:10px;
-    text-align:center;
-}
-
-.stat h3{color:#D6C29C;font-size:12px;margin:0;}
-.stat p{font-size:20px;font-weight:bold;margin:5px 0 0;}
 
 table{
     width:100%;
@@ -261,7 +159,6 @@ th,td{
     padding:12px;
     border-bottom:1px solid #222;
     vertical-align:top;
-    font-size:14px;
 }
 
 th{
@@ -269,66 +166,46 @@ th{
     text-align:left;
 }
 
-.small{font-size:12px;color:#aaa;}
-
-.suggest{
-    margin:10px 0;
-    color:#D6C29C;
+select{
+    padding:6px;
+    background:#161616;
+    color:#fff;
+    border:1px solid #333;
+    border-radius:6px;
 }
 
-.slot{
-    display:inline-block;
-    margin-right:8px;
-    background:#161616;
-    padding:5px 10px;
-    border-radius:8px;
+.badge{
     font-size:12px;
+    padding:3px 6px;
+    border-radius:6px;
+    display:inline-block;
+    margin-bottom:5px;
+}
+
+.ok{
+    background:#1f3d2b;
+    color:#7dffaf;
+}
+
+.none{
+    background:#3d3a1f;
+    color:#ffe08a;
+}
+
+.small{
+    font-size:12px;
+    color:#aaa;
 }
 </style>
 </head>
 
 <body>
 
-<?php include __DIR__.'/includes/sidebar.php'; ?>
+<?php include 'includes/sidebar.php'; ?>
 
 <div class="main">
 
 <h2>Bookings</h2>
-
-<?php if(isset($_SESSION['error'])): ?>
-<div class="msg error"><?= $_SESSION['error']; unset($_SESSION['error']); ?></div>
-<?php endif; ?>
-
-<?php if(isset($_SESSION['success'])): ?>
-<div class="msg success"><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
-<?php endif; ?>
-
-<div class="topbar">
-
-<form method="GET">
-<input type="text" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>">
-<input type="date" name="date" value="<?= htmlspecialchars($date) ?>">
-<button>Filter</button>
-</form>
-
-</div>
-
-<!-- SUGGEST TIME -->
-<?php if($date != ''): ?>
-<div class="suggest">
-🔥 Available Slots:
-<?php foreach(suggestTimes($conn,$date) as $s): ?>
-<span class="slot"><?= $s['time'] ?> (<?= $s['left'] ?> left)</span>
-<?php endforeach; ?>
-</div>
-<?php endif; ?>
-
-<div class="stats">
-<div class="stat"><h3>Total</h3><p><?= $total ?></p></div>
-<div class="stat"><h3>Pending</h3><p><?= $pending ?></p></div>
-<div class="stat"><h3>Confirmed</h3><p><?= $confirmed ?></p></div>
-<div class="stat"><h3>Completed</h3><p><?= $completed ?></p></div>
-</div>
 
 <table>
 
@@ -336,21 +213,18 @@ th{
 <th>Customer</th>
 <th>Service</th>
 <th>Schedule</th>
-<th>Therapist</th>
-<th>Add-ons</th>
+<th>Therapists</th>
 <th>Pax</th>
 <th>Status</th>
 </tr>
 
 <?php while($row=mysqli_fetch_assoc($bookings)): ?>
 
-<?php $beds = checkBeds($conn,$row['booking_date'],$row['booking_time']); ?>
-
 <tr>
 
 <td>
-<strong><?= $row['customer_name'] ?></strong><br>
-<span class="small"><?= $row['user_id']?'User':'Guest' ?></span>
+<b><?= $row['customer_name'] ?></b><br>
+<span class="small"><?= $row['phone'] ?></span>
 </td>
 
 <td>
@@ -359,34 +233,49 @@ th{
 </td>
 
 <td>
-<strong><?= date("M d, Y",strtotime($row['booking_date'])) ?></strong><br>
-<?= date("h:i A",strtotime($row['booking_time'])) ?><br>
-<span class="small"><?= bedStatus($beds) ?></span>
+<b><?= date("M d, Y",strtotime($row['booking_date'])) ?></b><br>
+<?= date("h:i A",strtotime($row['booking_time'])) ?>
 </td>
 
 <td>
-<form method="POST">
-<input type="hidden" name="id" value="<?= $row['id'] ?>">
-<input type="hidden" name="assign_therapist" value="1">
 
-<select name="therapist_id" onchange="this.form.submit()">
+<?php
+$bt = mysqli_query($conn,"
+SELECT t.name
+FROM booking_therapists bt
+JOIN therapists t ON t.id = bt.therapist_id
+WHERE bt.booking_id=".$row['id']
+);
+
+if(mysqli_num_rows($bt) > 0){
+    echo "<div class='badge ok'>Assigned</div><br>";
+    while($t=mysqli_fetch_assoc($bt)){
+        echo "• ".$t['name']."<br>";
+    }
+}else{
+    echo "<div class='badge none'>No Pref</div>";
+}
+?>
+
+<br>
+
+<select onchange="assignTherapist(this, <?= $row['id'] ?>)">
 <option value="0">No Pref</option>
 
 <?php
 mysqli_data_seek($therapists,0);
 while($t=mysqli_fetch_assoc($therapists)):
 ?>
-<option value="<?= $t['id'] ?>" <?= $row['therapist_id']==$t['id']?'selected':'' ?>>
+<option value="<?= $t['id'] ?>">
 <?= $t['name'] ?>
 </option>
 <?php endwhile; ?>
 
 </select>
-</form>
+
 </td>
 
-<td><?= $row['addons'] ?: 'None' ?></td>
-<td><?= $row['pax'] ?: 1 ?></td>
+<td><?= $row['pax'] ?></td>
 
 <td>
 <form method="POST">
@@ -407,6 +296,25 @@ while($t=mysqli_fetch_assoc($therapists)):
 </table>
 
 </div>
+
+<script>
+function assignTherapist(el, id){
+
+fetch("bookings.php", {
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:`ajax_assign=1&booking_id=${id}&therapist_id=${el.value}`
+})
+.then(res=>res.text())
+.then(res=>{
+    if(res.trim()=="CONFLICT"){
+        alert("❌ Therapist already booked on this schedule!");
+    } else {
+        location.reload();
+    }
+});
+}
+</script>
 
 </body>
 </html>

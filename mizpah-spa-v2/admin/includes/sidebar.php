@@ -6,6 +6,7 @@
 </div>
 
 <a href="dashboard.php">Dashboard</a>
+<a href="reports.php">Sales Report</a>
 <a href="services.php">Services</a>
 <a href="bookings.php">Bookings</a>
 <a href="therapists.php">Therapists</a>

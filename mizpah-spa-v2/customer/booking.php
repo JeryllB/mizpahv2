@@ -1,39 +1,50 @@
 <?php
 session_start();
+
+/* FIXED PATH */
 include '../includes/db.php';
 
-if(!isset($_SESSION['user_id'])){
-    header("Location: ../login.php");
-    exit;
+if (!$conn) {
+    die("Database connection failed");
 }
 
-$user_id = $_SESSION['user_id'];
-$user_name = $_SESSION['name'];
+/* =========================
+   INSERT BOOKING
+========================= */
+if (isset($_POST['submit_booking'])) {
 
-/* SUBMIT BOOKING */
-if(isset($_POST['submit_booking'])){
+    $user_id = $_SESSION['user_id'] ?? null;
 
-    $name     = mysqli_real_escape_string($conn,$_POST['customer_name']);
-    $phone    = mysqli_real_escape_string($conn,$_POST['phone']);
-    $service  = mysqli_real_escape_string($conn,$_POST['service']);
-    $duration = mysqli_real_escape_string($conn,$_POST['duration']);
-    $price    = mysqli_real_escape_string($conn,$_POST['price']);
-    $date     = mysqli_real_escape_string($conn,$_POST['booking_date']);
-    $time     = mysqli_real_escape_string($conn,$_POST['booking_time']);
-    $pax      = mysqli_real_escape_string($conn,$_POST['pax']);
-    $notes    = mysqli_real_escape_string($conn,$_POST['notes']);
+    $name = mysqli_real_escape_string($conn, $_POST['customer_name']);
+    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
+    $service = mysqli_real_escape_string($conn, $_POST['service']);
+    $duration = mysqli_real_escape_string($conn, $_POST['duration']);
+    $price = mysqli_real_escape_string($conn, $_POST['price']);
+    $date = mysqli_real_escape_string($conn, $_POST['booking_date']);
+    $time = mysqli_real_escape_string($conn, $_POST['booking_time']);
+    $pax = mysqli_real_escape_string($conn, $_POST['pax']);
+    $notes = mysqli_real_escape_string($conn, $_POST['notes']);
+    $payment_method = mysqli_real_escape_string($conn, $_POST['payment_method']);
+    $therapist_id = (int)($_POST['therapist_id'] ?? 0);
 
-    $therapist_id = mysqli_real_escape_string($conn,$_POST['therapist'] ?? '');
-    $payment_method = mysqli_real_escape_string($conn,$_POST['payment_method']);
-    $addons = mysqli_real_escape_string($conn,$_POST['addons'] ?? "");
+    $addons = $_POST['addons'] ?? "";
+    if (is_array($addons)) {
+        $addons = implode(", ", $addons);
+    }
 
-    mysqli_query($conn,"INSERT INTO bookings
-    (user_id,customer_name,phone,service,duration,price,booking_date,booking_time,pax,addons,therapist_id,payment_method,notes,status)
-    VALUES
-    ('$user_id','$name','$phone','$service','$duration','$price','$date','$time','$pax','$addons','$therapist_id','$payment_method','$notes','Pending')
+    mysqli_query($conn, "
+        INSERT INTO bookings (
+            user_id, customer_name, phone, service, duration, price,
+            booking_date, booking_time, pax, addons,
+            payment_method, notes, therapist_id, status
+        ) VALUES (
+            '$user_id','$name','$phone','$service','$duration','$price',
+            '$date','$time','$pax','$addons',
+            '$payment_method','$notes','$therapist_id','Pending'
+        )
     ");
 
-    echo "<script>alert('Booking Successful!');window.location='mybookings.php';</script>";
+    header("Location: thankyou.php");
     exit;
 }
 ?>
@@ -41,311 +52,386 @@ if(isset($_POST['submit_booking'])){
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Booking</title>
+<title>Mizpah Booking</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-body{margin:0;font-family:Poppins;background:#0b0b0b;color:#fff;}
-header{padding:15px 8%;background:#111;display:flex;justify-content:space-between;border-bottom:1px solid #333;}
-.logo{font-family:'Playfair Display';color:#D6C29C;font-size:22px;}
+body{
+margin:0;
+font-family:Poppins;
+background:#0b0b0b;
+color:#fff;
+}
 
-.section{padding:25px 8%;}
-.title{color:#D6C29C;font-size:20px;margin-bottom:10px;}
+/* HEADER */
+.topbar{
+position:sticky;
+top:0;
+z-index:999;
+background:#111;
+padding:18px;
+text-align:center;
+color:#D6C29C;
+font-weight:600;
+border-bottom:1px solid #333;
+}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+/* CONTAINER */
+.wrapper{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
 
-.card{
-background:#161616;
-padding:15px;
-border-radius:10px;
+/* SECTION */
+section{
+margin-bottom:25px;
+}
+
+h3{
+color:#D6C29C;
+text-align:center;
+margin-bottom:10px;
+}
+
+/* LIST */
+.list{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.item{
+background:#111;
 border:1px solid #333;
+padding:14px;
+border-radius:10px;
 cursor:pointer;
 transition:.2s;
-position:relative;
 }
 
-.card:hover{transform:scale(1.02);border-color:#D6C29C;}
+.item:hover{border-color:#D6C29C;}
+.item.active{border:2px solid #D6C29C;}
 
-.card.active{
-border:2px solid #D6C29C;
-background:#1f1f1f;
+.item small{
+display:block;
+font-size:12px;
+color:#aaa;
+margin-top:5px;
+line-height:1.4;
 }
 
-.card.active::after{
-content:"✔";
-position:absolute;
-top:10px;right:12px;
-color:#D6C29C;
-font-weight:bold;
+/* DURATION */
+.duration-box{
+display:flex;
+gap:10px;
 }
 
-.desc{font-size:13px;color:#bbb;margin:8px 0;}
-.price{color:#D6C29C;font-weight:600;}
-
-.summary{
-background:#161616;
-padding:15px;
-border-radius:8px;
+.duration{
+flex:1;
+background:#111;
 border:1px solid #333;
+padding:12px;
+text-align:center;
+border-radius:10px;
+cursor:pointer;
+}
+
+.duration.active{
+border:2px solid #D6C29C;
+}
+
+/* ADDONS */
+.addon-box{
+display:none;
+flex-direction:column;
+gap:10px;
 margin-top:10px;
 }
 
+.addon{
+background:#111;
+border:1px solid #333;
+padding:12px;
+border-radius:10px;
+cursor:pointer;
+text-align:center;
+}
+
+.addon.active{
+border:2px solid #D6C29C;
+}
+
+/* INPUT */
 input,select,textarea{
 width:100%;
 padding:10px;
-margin-top:5px;
+margin-top:6px;
 background:#0d0d0d;
 border:1px solid #333;
 color:#fff;
 border-radius:6px;
 }
 
+/* TIME */
+.time-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:8px;
+}
+
+.time{
+padding:10px;
+text-align:center;
+background:#111;
+border:1px solid #333;
+border-radius:8px;
+cursor:pointer;
+font-size:12px;
+}
+
+.time.active{
+background:#D6C29C;
+color:#000;
+}
+
+/* BUTTON */
 button{
+width:100%;
+padding:12px;
+margin-top:15px;
 background:#D6C29C;
 border:none;
-padding:12px;
-width:100%;
-margin-top:10px;
 font-weight:600;
+border-radius:8px;
 cursor:pointer;
+}
+
+/* SUMMARY */
+.summary{
+background:#111;
+border:1px solid #333;
+padding:15px;
+border-radius:10px;
+margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-<div class="logo">Mizpah Spa Booking</div>
-<div><?= $user_name ?></div>
-</header>
+<div class="topbar">Mizpah Wellness Spa Booking</div>
+
+<div class="wrapper">
 
 <form method="POST">
 
-<input type="hidden" name="customer_name" value="<?= $user_name ?>">
 <input type="hidden" name="service" id="service">
 <input type="hidden" name="duration" id="duration">
 <input type="hidden" name="price" id="price">
 <input type="hidden" name="addons" id="addons">
-
-<!-- THERAPIST -->
-<div class="section">
-<div class="title">Preferred Therapist</div>
-<select name="therapist">
-<option value="">No Preference</option>
-<?php
-$q = mysqli_query($conn,"SELECT id,name FROM therapists ORDER BY name ASC");
-while($r = mysqli_fetch_assoc($q)){
-?>
-<option value="<?= $r['id'] ?>"><?= htmlspecialchars($r['name']) ?></option>
-<?php } ?>
-</select>
-</div>
+<input type="hidden" name="booking_time" id="booking_time">
 
 <!-- SERVICES -->
-<div class="section">
-<div class="title">Services</div>
-<div class="grid">
+<section>
+<h3>Services</h3>
 
-<div class="card" onclick="selectService(this,'Swedish Massage',600)">
+<div class="list">
+
+<div class="item" onclick="selectService(this,'Swedish Massage','A gentle relaxation massage',600)">
 <b>Swedish Massage</b>
-<div class="desc">A gentle, soothing massage using light to moderate pressure for deep relaxation.</div>
-<div class="price">₱600</div>
+<small>A gentle, soothing massage using light pressure to relieve stress.</small>
 </div>
 
-<div class="card" onclick="selectService(this,'MIZPAH Signature',750)">
+<div class="item" onclick="selectService(this,'MIZPAH Signature','Premium blend therapy',750)">
 <b>MIZPAH Signature</b>
-<div class="desc">Blended therapy: Swedish + Shiatsu + deep tissue + stretching + facial + tool release.</div>
-<div class="price">₱750</div>
+<small>Swedish + Shiatsu + deep tissue + tool therapy blend.</small>
 </div>
 
-<div class="card" onclick="selectService(this,'Thai Massage',650)">
+<div class="item" onclick="selectService(this,'Thai Massage','Stretch therapy',650)">
 <b>Thai Massage</b>
-<div class="desc">Stretching + firm pressure therapy for flexibility and muscle relief.</div>
-<div class="price">₱650</div>
+<small>Stretching + pressure therapy for flexibility.</small>
 </div>
 
-<div class="card" onclick="selectService(this,'Shiatsu Massage',650)">
+<div class="item" onclick="selectService(this,'Shiatsu Massage','Energy flow',650)">
 <b>Shiatsu Massage</b>
-<div class="desc">Finger pressure technique to restore energy flow and reduce tension.</div>
-<div class="price">₱650</div>
+<small>Pressure-based energy balancing therapy.</small>
 </div>
 
-<div class="card" onclick="selectService(this,'Lymphatic Massage',850)">
+<div class="item" onclick="selectService(this,'Lymphatic Massage','Detox',850)">
 <b>Lymphatic Massage</b>
-<div class="desc">Detox + fluid drainage to reduce bloating and improve circulation.</div>
-<div class="price">₱850</div>
+<small>Detox and fluid drainage therapy.</small>
 </div>
 
-<div class="card" onclick="selectService(this,'Prenatal Massage',850)">
-<b>Prenatal / Postpartum Massage</b>
-<div class="desc">Gentle massage tailored for mothers.</div>
-<div class="price">₱850</div>
+<div class="item" onclick="selectService(this,'Prenatal Massage','For moms',850)">
+<b>Prenatal / Postpartum</b>
+<small>Safe therapy for pregnancy recovery.</small>
 </div>
 
 </div>
-</div>
+</section>
+
+<!-- THERAPIST -->
+<section>
+<h3>Therapist (Optional)</h3>
+
+<select name="therapist_id">
+<option value="0">No Preference</option>
+
+<?php
+$t = mysqli_query($conn,"SELECT * FROM therapists WHERE status='Active'");
+while($row=mysqli_fetch_assoc($t)):
+?>
+<option value="<?= $row['id'] ?>">
+<?= $row['name'] ?>
+</option>
+<?php endwhile; ?>
+
+</select>
+</section>
 
 <!-- DURATION -->
-<div class="section">
-<div class="title">Duration</div>
-<div class="grid">
+<section>
+<h3>Duration</h3>
 
-<div class="card" onclick="setDuration(this,'1 hr',0)">1 Hour</div>
-<div class="card" onclick="setDuration(this,'1.5 hr',200)">1.5 Hours</div>
-<div class="card" onclick="setDuration(this,'2 hr',400)">2 Hours</div>
+<div class="duration-box">
 
-</div>
-</div>
-
-<!-- PACKAGES -->
-<div class="section">
-<div class="title">Mizpah Packages</div>
-<div class="grid">
-
-<div class="card" onclick="selectPackage(this,'Bronze Package','1 hr 45 mins',1600)">
-<b>Bronze Package</b>
-<div class="desc">Swedish + scrub + hot stone + masks + foot mask</div>
-<div class="price">₱1,600</div>
-</div>
-
-<div class="card" onclick="selectPackage(this,'Silver Package','1 hr 45 mins',1800)">
-<b>Silver Package</b>
-<div class="desc">MIZPAH Signature + full spa set</div>
-<div class="price">₱1,800</div>
-</div>
-
-<div class="card" onclick="selectPackage(this,'Gold Package','2 hrs',2000)">
-<b>Gold Package</b>
-<div class="desc">Full luxury spa experience</div>
-<div class="price">₱2,000</div>
-</div>
+<div class="duration" onclick="setDuration(this,'1 hr',0)">1 Hour</div>
+<div class="duration" onclick="setDuration(this,'1.5 hr',200)">1.5 Hour</div>
+<div class="duration" onclick="setDuration(this,'2 hr',400)">2 Hour</div>
 
 </div>
-</div>
+</section>
 
 <!-- ADDONS -->
-<div class="section">
-<div class="title">Add-ons</div>
-<div class="grid">
+<section>
+<h3 onclick="toggleAddons()">Add-ons ▼</h3>
 
-<div class="card addon" onclick="toggleAddon(this,300)">Hot Stone <div class="desc">Deep muscle relaxation</div><div class="price">₱300</div></div>
+<div class="addon-box" id="addonBox">
 
-<div class="card addon" onclick="toggleAddon(this,350)">Ventosa Cupping <div class="desc">Blood flow + toxin release</div><div class="price">₱350</div></div>
-
-<div class="card addon" onclick="toggleAddon(this,350)">Foot Massage <div class="desc">Reflexology therapy</div><div class="price">₱350</div></div>
-
-<div class="card addon" onclick="toggleAddon(this,350)">Head & Shoulder <div class="desc">Upper body relief</div><div class="price">₱350</div></div>
-
-<div class="card addon" onclick="toggleAddon(this,400)">Kiddie Massage <div class="desc">Gentle kids massage</div><div class="price">₱400</div></div>
-
+<div class="addon" onclick="addon(this,'Hot Stone',300)">Hot Stone</div>
+<div class="addon" onclick="addon(this,'Ventosa',350)">Ventosa</div>
+<div class="addon" onclick="addon(this,'Foot Massage',350)">Foot Massage</div>
+<div class="addon" onclick="addon(this,'Head & Shoulder',350)">Head & Shoulder</div>
+<div class="addon" onclick="addon(this,'Kiddie Massage',400)">Kiddie Massage</div>
 
 </div>
+</section>
+
+<!-- SCHEDULE -->
+<section>
+<h3>Schedule</h3>
+
+<input type="date" name="booking_date" required>
+
+<div class="time-grid">
+
+<div class="time" onclick="setTime(this,'15:00')">3 PM</div>
+<div class="time" onclick="setTime(this,'16:00')">4 PM</div>
+<div class="time" onclick="setTime(this,'17:00')">5 PM</div>
+<div class="time" onclick="setTime(this,'18:00')">6 PM</div>
+<div class="time" onclick="setTime(this,'19:00')">7 PM</div>
+<div class="time" onclick="setTime(this,'20:00')">8 PM</div>
+<div class="time" onclick="setTime(this,'21:00')">9 PM</div>
+<div class="time" onclick="setTime(this,'22:00')">10 PM</div>
+
 </div>
+</section>
 
-<!-- BOOKING -->
-<div class="section">
+<!-- DETAILS -->
+<section>
+<h3>Details</h3>
 
-<label>Date</label>
-<input type="date" name="booking_date" id="datePick" onchange="loadTimeSlots()" required>
+<input name="customer_name" placeholder="Name" required>
+<input name="phone" placeholder="Phone" required>
 
-<label>Time</label>
-<select name="booking_time" id="timeSlot" required></select>
-
-<label>Payment</label>
 <select name="payment_method">
 <option>Cash</option>
 <option>GCash</option>
 </select>
 
-<label>Pax</label>
 <select name="pax">
 <option>1</option><option>2</option><option>3</option>
 <option>4</option><option>5</option><option>6</option>
 </select>
 
-<label>Phone</label>
-<input type="text" name="phone" required>
-
-<label>Notes</label>
-<textarea name="notes"></textarea>
-
-<div class="summary" id="summary">Select service</div>
+<textarea name="notes" placeholder="Notes"></textarea>
 
 <button type="submit" name="submit_booking">CONFIRM BOOKING</button>
 
-</div>
+</section>
 
 </form>
 
+</div>
+
 <script>
-let selected = {};
-let addonTotal = 0;
 
-function selectService(el,name,price){
-document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
+let data = {
+service:"",
+duration:"",
+price:0,
+addons:[],
+time:""
+};
+
+function selectService(el,name,desc,price){
+document.querySelectorAll(".item").forEach(i=>i.classList.remove("active"));
 el.classList.add("active");
-selected = {name,price};
-document.getElementById("service").value = name;
+
+data.service=name;
+data.price=price;
+
+document.getElementById("service").value=name;
+document.getElementById("price").value=price;
 update();
 }
 
-function setDuration(el,duration,extra){
-document.querySelectorAll(".section:nth-of-type(3) .card").forEach(c=>c.classList.remove("active"));
+function setDuration(el,dur,extra){
+document.querySelectorAll(".duration").forEach(d=>d.classList.remove("active"));
 el.classList.add("active");
-selected.duration = duration;
-selected.price = (selected.price||0)+extra;
-document.getElementById("duration").value = duration;
+
+data.duration=dur;
+data.price+=extra;
+
+document.getElementById("duration").value=dur;
+document.getElementById("price").value=data.price;
 update();
 }
 
-function selectPackage(el,name,duration,price){
-document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
-el.classList.add("active");
-
-selected = {name,price,duration};
-document.getElementById("service").value = name;
-document.getElementById("duration").value = duration;
-
-update();
-}
-
-function toggleAddon(el,price){
+function addon(el,name,price){
 el.classList.toggle("active");
-addonTotal += el.classList.contains("active") ? price : -price;
 
-let arr=[...document.querySelectorAll(".addon.active")].map(a=>a.innerText);
-document.getElementById("addons").value = arr.join(", ");
+if(el.classList.contains("active")){
+data.addons.push(name);
+data.price+=price;
+}else{
+data.addons=data.addons.filter(a=>a!==name);
+data.price-=price;
+}
 
+document.getElementById("addons").value=data.addons.join(", ");
+document.getElementById("price").value=data.price;
 update();
+}
+
+function setTime(el,time){
+document.querySelectorAll(".time").forEach(t=>t.classList.remove("active"));
+el.classList.add("active");
+
+data.time=time;
+document.getElementById("booking_time").value=time;
+}
+
+function toggleAddons(){
+document.getElementById("addonBox").style.display="flex";
 }
 
 function update(){
-let total = (selected.price||0)+addonTotal;
-
-document.getElementById("price").value = total;
-
-document.getElementById("summary").innerHTML =
-"<b>Service:</b> "+(selected.name||"-")+"<br>"+
-"<b>Duration:</b> "+(selected.duration||"-")+"<br>"+
-"<b>Addons:</b> ₱"+addonTotal+"<br>"+
-"<b>Total:</b> ₱"+total;
+console.log(data);
 }
 
-/* TIME FIX */
-function loadTimeSlots(){
-let sel = document.getElementById("timeSlot");
-sel.innerHTML="";
-
-for(let h=15;h<=23;h++){
-let hr=h>12?h-12:h;
-let ampm=h>=12?"PM":"AM";
-sel.innerHTML+=`<option value="${h}:00">${hr}:00 ${ampm}</option>`;
-}
-}
-
-document.addEventListener("DOMContentLoaded", loadTimeSlots);
 </script>
 
 </body>
