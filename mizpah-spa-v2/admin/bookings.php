@@ -2,314 +2,334 @@
 session_start();
 include '../includes/db.php';
 
-if(!isset($_SESSION['user_id'])){
+if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
     exit;
 }
 
-/* UPDATE STATUS */
-if(isset($_POST['update_status'])){
-    $id = (int)$_POST['id'];
-    $status = mysqli_real_escape_string($conn,$_POST['status']);
+/* =========================
+   BED CHECK (6 LIMIT)
+========================= */
+function checkBeds($conn, $date, $time) {
 
-    mysqli_query($conn,"UPDATE bookings SET status='$status' WHERE id='$id'");
+    $q = mysqli_query($conn,"
+        SELECT COUNT(*) as total 
+        FROM bookings
+        WHERE booking_date='$date'
+        AND booking_time='$time'
+        AND status != 'Cancelled'
+    ");
+
+    $r = mysqli_fetch_assoc($q);
+
+    return $r['total'];
+}
+
+/* =========================
+   BED STATUS DISPLAY
+========================= */
+function bedStatus($count) {
+
+    if ($count >= 6) return "🔴 Full ($count/6)";
+    if ($count >= 3) return "🟡 Busy ($count/6)";
+    return "🟢 Available ($count/6)";
+}
+
+/* =========================
+   SUGGEST AVAILABLE TIMES
+========================= */
+function suggestTimes($conn, $date) {
+
+    $times = ["10:00 AM","12:00 PM","2:00 PM","4:00 PM","6:00 PM","8:00 PM"];
+
+    $available = [];
+
+    foreach ($times as $time) {
+
+        $q = mysqli_query($conn,"
+            SELECT COUNT(*) as total
+            FROM bookings
+            WHERE booking_date='$date'
+            AND booking_time='$time'
+            AND status != 'Cancelled'
+        ");
+
+        $r = mysqli_fetch_assoc($q);
+
+        if ($r['total'] < 6) {
+            $available[] = [
+                "time" => $time,
+                "left" => 6 - $r['total']
+            ];
+        }
+    }
+
+    return $available;
+}
+
+/* =========================
+   STATUS UPDATE
+========================= */
+if (isset($_POST['update_status'])) {
+    $id = (int)$_POST['id'];
+    $status = mysqli_real_escape_string($conn, $_POST['status']);
+
+    mysqli_query($conn, "UPDATE bookings SET status='$status' WHERE id='$id'");
     header("Location: bookings.php");
     exit;
 }
 
-/* FILTERS */
+/* =========================
+   ASSIGN THERAPIST + CHECKS
+========================= */
+if (isset($_POST['assign_therapist'])) {
+
+    $id = (int)$_POST['id'];
+    $therapist_id = (int)$_POST['therapist_id'];
+
+    $b = mysqli_fetch_assoc(mysqli_query($conn,"
+        SELECT booking_date, booking_time 
+        FROM bookings 
+        WHERE id=$id
+    "));
+
+    $date = $b['booking_date'];
+    $time = $b['booking_time'];
+
+    $count = checkBeds($conn, $date, $time);
+
+    if ($count >= 6) {
+
+        $_SESSION['error'] = "❌ Fully booked (6/6 beds) for this schedule.";
+
+    } else {
+
+        $conflict = mysqli_query($conn,"
+            SELECT id FROM bookings
+            WHERE therapist_id='$therapist_id'
+            AND booking_date='$date'
+            AND booking_time='$time'
+            AND id != '$id'
+        ");
+
+        if (mysqli_num_rows($conflict) > 0) {
+
+            $_SESSION['error'] = "❌ Therapist already booked on this time slot.";
+
+        } else {
+
+            mysqli_query($conn,"
+                UPDATE bookings 
+                SET therapist_id='$therapist_id'
+                WHERE id='$id'
+            ");
+
+            $_SESSION['success'] = "✅ Assigned successfully!";
+        }
+    }
+
+    header("Location: bookings.php");
+    exit;
+}
+
+/* =========================
+   FILTER
+========================= */
 $search = $_GET['search'] ?? '';
 $date   = $_GET['date'] ?? '';
 
 $where = " WHERE 1=1 ";
 
-if($search != ''){
-    $searchSafe = mysqli_real_escape_string($conn,$search);
+if ($search != '') {
+    $s = mysqli_real_escape_string($conn, $search);
     $where .= " AND (
-        customer_name LIKE '%$searchSafe%' OR
-        phone LIKE '%$searchSafe%' OR
-        service LIKE '%$searchSafe%'
+        customer_name LIKE '%$s%' OR
+        phone LIKE '%$s%' OR
+        service LIKE '%$s%' OR
+        status LIKE '%$s%'
     )";
 }
 
-if($date != ''){
-    $dateSafe = mysqli_real_escape_string($conn,$date);
-    $where .= " AND booking_date='$dateSafe'";
+if ($date != '') {
+    $d = mysqli_real_escape_string($conn, $date);
+    $where .= " AND booking_date='$d'";
 }
 
-/* COUNTS */
-$total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM bookings"))['total'];
-$pending = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM bookings WHERE status='Pending'"))['total'];
-$confirmed = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM bookings WHERE status='Confirmed'"))['total'];
-$completed = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM bookings WHERE status='Completed'"))['total'];
-
-/* BOOKINGS */
+/* =========================
+   DATA
+========================= */
 $bookings = mysqli_query($conn,"
-SELECT 
-    bookings.*,
-    therapists.name AS therapist_name
+SELECT bookings.*, therapists.name AS therapist_name
 FROM bookings
-LEFT JOIN therapists 
-    ON bookings.therapist_id = therapists.id
+LEFT JOIN therapists ON bookings.therapist_id = therapists.id
 $where
-ORDER BY booking_date DESC, booking_time DESC, id DESC
+ORDER BY booking_date DESC, booking_time DESC
 ");
+
+$therapists = mysqli_query($conn,"SELECT * FROM therapists WHERE status='Active'");
+
+/* =========================
+   STATS
+========================= */
+$total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as c FROM bookings"))['c'];
+$pending = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as c FROM bookings WHERE status='Pending'"))['c'];
+$confirmed = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as c FROM bookings WHERE status='Confirmed'"))['c'];
+$completed = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) as c FROM bookings WHERE status='Completed'"))['c'];
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bookings</title>
 
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <style>
 body{
-font-family:Poppins;
-background:#0b0b0b;
-color:#fff;
-margin:0;
+    margin:0;
+    font-family:Poppins;
+    background:#0b0b0b;
+    color:#fff;
+    font-size:14px;
 }
 
-/* override sidebar layout */
 .main{
-margin-left:250px;
-padding:20px;
+    margin-left:250px;
+    padding:20px;
 }
 
-/* TOP */
 .topbar{
-display:flex;
-justify-content:space-between;
-flex-wrap:wrap;
-gap:10px;
-margin-bottom:20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
 }
 
-.filters{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
+input,select,button{
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    font-size:13px;
 }
 
-input,button,select{
-padding:10px;
-border-radius:8px;
-border:none;
-font-size:14px;
-}
-
-input{
-background:#161616;
-color:#fff;
-border:1px solid #333;
+input,select{
+    background:#161616;
+    color:#fff;
+    border:1px solid #333;
 }
 
 button{
-background:#D6C29C;
-font-weight:bold;
-cursor:pointer;
-color:#111;
+    background:#D6C29C;
+    color:#111;
+    font-weight:bold;
+    cursor:pointer;
 }
 
-/* STATS */
+.msg{
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:10px;
+}
+.error{background:#3b1717;color:#ff9e9e;}
+.success{background:#173527;color:#7dffaf;}
+
 .stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-gap:12px;
-margin-bottom:20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:10px;
+    margin-bottom:15px;
 }
 
 .stat{
-background:#161616;
-padding:15px;
-border-radius:10px;
-border:1px solid #222;
+    background:#161616;
+    padding:12px;
+    border-radius:10px;
+    text-align:center;
 }
 
-.stat h3{
-color:#D6C29C;
-font-size:13px;
-}
+.stat h3{color:#D6C29C;font-size:12px;margin:0;}
+.stat p{font-size:20px;font-weight:bold;margin:5px 0 0;}
 
-.stat p{
-font-size:24px;
-font-weight:bold;
-}
-
-/* TABLE FIX (NO BOX / NO SCROLL) */
 table{
-width:100%;
-border-collapse:collapse;
-table-layout:fixed; /* important */
+    width:100%;
+    border-collapse:collapse;
 }
 
-/* ❌ override admin.css nga nag sisira */
 th,td{
-white-space:normal !important;
-max-width:none !important;
-overflow:visible !important;
-text-overflow:unset !important;
-
-padding:10px;
-border-bottom:1px solid #222;
-font-size:14px;
-vertical-align:top;
+    padding:12px;
+    border-bottom:1px solid #222;
+    vertical-align:top;
+    font-size:14px;
 }
 
 th{
-background:#1d1d1d;
-color:#D6C29C;
-text-align:left;
-}
-
-/* ===== SPA TABLE UPGRADE ===== */
-
-table{
-width:100%;
-border-collapse:separate;
-border-spacing:0 10px; /* space between rows */
-table-layout:fixed;
-}
-
-tr{
-background:#161616;
-border-radius:12px;
-overflow:hidden;
-box-shadow:0 2px 10px rgba(0,0,0,0.3);
-}
-
-th{
-background:#1d1d1d;
-color:#D6C29C;
-padding:14px;
-text-align:left;
-font-size:13px;
-letter-spacing:0.5px;
-}
-
-td{
-padding:14px;
-border:none !important;
-vertical-align:top;
-font-size:14px;
-}
-
-/* row hover */
-tr:hover{
-transform:scale(1.01);
-transition:.2s;
-background:#1a1a1a;
-}
-
-/* customer highlight */
-td strong{
-color:#fff;
-font-size:15px;
-}
-
-/* service look */
-.service{
-font-weight:600;
-color:#D6C29C;
-}
-
-/* schedule style */
-.schedule{
-color:#ddd;
-font-size:13px;
-}
-
-/* notes */
-.note{
-color:#aaa;
-font-size:12px;
-line-height:1.4;
-}
-
-/* action button cleaner */
-.actions select{
-padding:8px;
-border-radius:6px;
-background:#0f0f0f;
-color:#fff;
-border:1px solid #333;
-}
-
-.actions button{
-padding:8px 10px;
-border-radius:6px;
-background:#D6C29C;
-border:none;
-font-weight:700;
-cursor:pointer;
-}
-
-/* badge polish */
-.badge{
-padding:6px 10px;
-border-radius:999px;
-font-size:12px;
-font-weight:600;
-}
-
-/* BADGE */
-.badge{
-padding:5px 10px;
-border-radius:20px;
-font-size:12px;
-display:inline-block;
-}
-
-.pending{background:#3a2f12;color:#ffd86b;}
-.confirmed{background:#173527;color:#7dffaf;}
-.completed{background:#1a2c4b;color:#8fc5ff;}
-.cancelled{background:#3b1717;color:#ff9e9e;}
-
-.cash{background:#2d3b2f;color:#7dffaf;}
-.gcash{background:#1e2a3b;color:#8fc5ff;}
-
-/* ACTION */
-.actions{
-display:flex;
-gap:8px;
-flex-wrap:wrap;
+    color:#D6C29C;
+    text-align:left;
 }
 
 .small{font-size:12px;color:#aaa;}
+
+.suggest{
+    margin:10px 0;
+    color:#D6C29C;
+}
+
+.slot{
+    display:inline-block;
+    margin-right:8px;
+    background:#161616;
+    padding:5px 10px;
+    border-radius:8px;
+    font-size:12px;
+}
 </style>
 </head>
 
 <body>
 
-<?php include __DIR__ . '/includes/sidebar.php'; ?>
+<?php include __DIR__.'/includes/sidebar.php'; ?>
 
 <div class="main">
 
+<h2>Bookings</h2>
+
+<?php if(isset($_SESSION['error'])): ?>
+<div class="msg error"><?= $_SESSION['error']; unset($_SESSION['error']); ?></div>
+<?php endif; ?>
+
+<?php if(isset($_SESSION['success'])): ?>
+<div class="msg success"><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
+<?php endif; ?>
+
 <div class="topbar">
-    <h2>Bookings Management</h2>
 
-    <form class="filters" method="GET">
-        <input type="text" name="search" placeholder="Search..."
-        value="<?= htmlspecialchars($search) ?>">
+<form method="GET">
+<input type="text" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>">
+<input type="date" name="date" value="<?= htmlspecialchars($date) ?>">
+<button>Filter</button>
+</form>
 
-        <input type="date" name="date" value="<?= htmlspecialchars($date) ?>">
-
-        <button type="submit">Filter</button>
-    </form>
 </div>
 
-<!-- STATS -->
+<!-- SUGGEST TIME -->
+<?php if($date != ''): ?>
+<div class="suggest">
+🔥 Available Slots:
+<?php foreach(suggestTimes($conn,$date) as $s): ?>
+<span class="slot"><?= $s['time'] ?> (<?= $s['left'] ?> left)</span>
+<?php endforeach; ?>
+</div>
+<?php endif; ?>
+
 <div class="stats">
-    <div class="stat"><h3>Total</h3><p><?= $total ?></p></div>
-    <div class="stat"><h3>Pending</h3><p><?= $pending ?></p></div>
-    <div class="stat"><h3>Confirmed</h3><p><?= $confirmed ?></p></div>
-    <div class="stat"><h3>Completed</h3><p><?= $completed ?></p></div>
+<div class="stat"><h3>Total</h3><p><?= $total ?></p></div>
+<div class="stat"><h3>Pending</h3><p><?= $pending ?></p></div>
+<div class="stat"><h3>Confirmed</h3><p><?= $confirmed ?></p></div>
+<div class="stat"><h3>Completed</h3><p><?= $completed ?></p></div>
 </div>
 
-<!-- TABLE (NO WRAPPER BOX) -->
 <table>
 
 <tr>
@@ -317,73 +337,72 @@ flex-wrap:wrap;
 <th>Service</th>
 <th>Schedule</th>
 <th>Therapist</th>
-<th>Notes</th>
+<th>Add-ons</th>
 <th>Pax</th>
-<th>Payment</th>
 <th>Status</th>
-<th>Action</th>
 </tr>
 
-<?php while($row=mysqli_fetch_assoc($bookings)) {
+<?php while($row=mysqli_fetch_assoc($bookings)): ?>
 
-$statusClass = strtolower($row['status']);
-$pay = strtolower($row['payment_method'] ?? 'cash');
-?>
+<?php $beds = checkBeds($conn,$row['booking_date'],$row['booking_time']); ?>
 
 <tr>
 
 <td>
-<strong><?= htmlspecialchars($row['customer_name']) ?></strong><br>
-<span class="small"><?= htmlspecialchars($row['phone']) ?></span>
-</td>
-
-<td><?= htmlspecialchars($row['service']) ?></td>
-
-<td>
-<?= date("M d, Y", strtotime($row['booking_date'])) ?><br>
-<?= date("h:i A", strtotime($row['booking_time'])) ?>
+<strong><?= $row['customer_name'] ?></strong><br>
+<span class="small"><?= $row['user_id']?'User':'Guest' ?></span>
 </td>
 
 <td>
-<?= $row['therapist_name'] ? htmlspecialchars($row['therapist_name']) : 'No Preference' ?>
+<?= $row['service'] ?><br>
+<span class="small"><?= $row['duration'] ?></span>
 </td>
 
 <td>
-<?= $row['notes'] ? nl2br(htmlspecialchars($row['notes'])) : '<span class="small">No notes</span>' ?>
-</td>
-
-<td><?= $row['pax'] ?? 1 ?></td>
-
-<td>
-<span class="badge <?= $pay ?>">
-<?= htmlspecialchars($row['payment_method'] ?? 'Cash') ?>
-</span>
+<strong><?= date("M d, Y",strtotime($row['booking_date'])) ?></strong><br>
+<?= date("h:i A",strtotime($row['booking_time'])) ?><br>
+<span class="small"><?= bedStatus($beds) ?></span>
 </td>
 
 <td>
-<span class="badge <?= $statusClass ?>">
-<?= htmlspecialchars($row['status']) ?>
-</span>
-</td>
-
-<td>
-<form method="POST" class="actions">
+<form method="POST">
 <input type="hidden" name="id" value="<?= $row['id'] ?>">
+<input type="hidden" name="assign_therapist" value="1">
 
-<select name="status">
+<select name="therapist_id" onchange="this.form.submit()">
+<option value="0">No Pref</option>
+
+<?php
+mysqli_data_seek($therapists,0);
+while($t=mysqli_fetch_assoc($therapists)):
+?>
+<option value="<?= $t['id'] ?>" <?= $row['therapist_id']==$t['id']?'selected':'' ?>>
+<?= $t['name'] ?>
+</option>
+<?php endwhile; ?>
+
+</select>
+</form>
+</td>
+
+<td><?= $row['addons'] ?: 'None' ?></td>
+<td><?= $row['pax'] ?: 1 ?></td>
+
+<td>
+<form method="POST">
+<input type="hidden" name="id" value="<?= $row['id'] ?>">
+<select name="status" onchange="this.form.submit()">
 <option <?= $row['status']=='Pending'?'selected':'' ?>>Pending</option>
 <option <?= $row['status']=='Confirmed'?'selected':'' ?>>Confirmed</option>
 <option <?= $row['status']=='Completed'?'selected':'' ?>>Completed</option>
 <option <?= $row['status']=='Cancelled'?'selected':'' ?>>Cancelled</option>
 </select>
-
-<button name="update_status">Save</button>
 </form>
 </td>
 
 </tr>
 
-<?php } ?>
+<?php endwhile; ?>
 
 </table>
 

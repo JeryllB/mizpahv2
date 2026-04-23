@@ -1,13 +1,16 @@
 <?php
 session_start();
 
-$data = $_SESSION['last_booking'] ?? null;
+$data = $_SESSION['last_booking'] ?? [];
 
 $name = $data['name'] ?? 'Guest';
-$service = $data['service'] ?? 'Service';
+$service = $data['service'] ?? 'Not specified';
 $date = $data['date'] ?? '';
 $time = $data['time'] ?? '';
-$price = $data['price'] ?? '';
+$price = $data['price'] ?? 0;
+
+$formattedDate = $date ? date("F d, Y", strtotime($date)) : 'Not set';
+$formattedTime = $time ? date("g:i A", strtotime($time)) : 'Not set';
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +18,7 @@ $price = $data['price'] ?? '';
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Booking Success</title>
+<title>Booking Confirmed</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 
@@ -28,7 +31,7 @@ font-family:Poppins;
 }
 
 .container{
-height:100vh;
+min-height:100vh;
 display:flex;
 align-items:center;
 justify-content:center;
@@ -40,31 +43,48 @@ padding:20px;
 h1{
 font-family:'Playfair Display';
 color:#D6C29C;
-font-size:32px;
+font-size:34px;
+margin-bottom:10px;
 }
 
-.box{
-margin-top:20px;
+.subtitle{
+color:#aaa;
+font-size:14px;
+margin-bottom:20px;
+}
+
+.card{
 background:#161616;
-padding:20px;
-border-radius:12px;
 border:1px solid #333;
-max-width:400px;
+border-radius:12px;
+padding:20px;
+max-width:420px;
 width:100%;
 text-align:left;
+box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
-.box p{
-margin:8px 0;
+.row{
+margin:10px 0;
 font-size:14px;
 color:#ccc;
+}
+
+.row b{
+color:#fff;
+}
+
+.status{
+color:#D6C29C;
+font-weight:600;
+margin-top:10px;
 }
 
 .btn{
 margin-top:20px;
 background:#D6C29C;
 color:#000;
-padding:12px 20px;
+padding:12px 18px;
 border:none;
 border-radius:8px;
 text-decoration:none;
@@ -72,10 +92,16 @@ display:inline-block;
 font-weight:600;
 }
 
-.small{
-margin-top:10px;
+.note{
+margin-top:12px;
 font-size:12px;
 color:#777;
+}
+
+.countdown{
+margin-top:10px;
+font-size:12px;
+color:#aaa;
 }
 </style>
 </head>
@@ -84,27 +110,43 @@ color:#777;
 
 <div class="container">
 
-<h1>Booking Confirmed </h1>
+<h1>Booking Confirmed</h1>
+<div class="subtitle">Thank you for choosing Mizpah Wellness Spa</div>
 
-<div class="box">
-<p><b>Name:</b> <?= htmlspecialchars($name) ?></p>
-<p><b>Service:</b> <?= htmlspecialchars($service) ?></p>
-<p><b>Date:</b> <?= htmlspecialchars($date) ?></p>
-<p><b>Time:</b> <?= htmlspecialchars($time) ?></p>
-<p><b>Price:</b> ₱<?= htmlspecialchars($price) ?></p>
-<p style="color:#D6C29C;">Status: Pending</p>
+<div class="card">
+
+<div class="row"><b>Name:</b> <?= htmlspecialchars($name) ?></div>
+<div class="row"><b>Service:</b> <?= htmlspecialchars($service) ?></div>
+<div class="row"><b>Date:</b> <?= htmlspecialchars($formattedDate) ?></div>
+<div class="row"><b>Time:</b> <?= htmlspecialchars($formattedTime) ?></div>
+<div class="row"><b>Total Price:</b> ₱<?= number_format($price) ?></div>
+
+<div class="status">Status: Pending Confirmation</div>
+
 </div>
 
 <a class="btn" href="index.php">Back to Home</a>
 
-<div class="small">We will contact you shortly for confirmation.</div>
+<div class="note">We will contact you shortly for confirmation.</div>
+
+<div class="countdown">
+Redirecting in <span id="sec">5</span> seconds...
+</div>
 
 </div>
 
 <script>
-setTimeout(()=>{
-window.location='index.php';
-}, 5000);
+let sec = 5;
+
+let timer = setInterval(()=>{
+sec--;
+document.getElementById("sec").innerText = sec;
+
+if(sec <= 0){
+clearInterval(timer);
+window.location = "index.php";
+}
+},1000);
 </script>
 
 </body>

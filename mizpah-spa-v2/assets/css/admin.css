@@ -128,17 +128,104 @@ font-weight:700;
 }
 
 /* ================= TABLE ================= */
-table{
-width:100%;
-border-collapse:collapse;
+/* ================= TABLE WRAPPER ================= */
+.table-wrap{
+    width:100%;
+    overflow:hidden;
 }
 
-th, td{
-white-space:nowrap;
-overflow:hidden;
-text-overflow:ellipsis;
-max-width:1px;
+/* ================= TABLE BASE ================= */
+table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    font-size:14px;
 }
+
+/* ================= HEADER ================= */
+th{
+    background:#1d1d1d;
+    color:#D6C29C;
+    padding:14px 10px;
+    text-align:left;
+    font-size:14px;
+    font-weight:700;
+    border-bottom:1px solid #333;
+}
+
+/* ================= CELLS ================= */
+td{
+    background:#161616;
+    padding:14px 10px;
+    font-size:14px;
+    vertical-align:top;
+    border-bottom:1px solid #222;
+    word-break:break-word;
+    line-height:1.4;
+}
+
+/* ================= ROW HOVER ================= */
+tr:hover td{
+    background:#1b1b1b;
+    transition:.2s;
+}
+
+/* ================= TEXT STYLES ================= */
+.small{
+    font-size:12px;
+    color:#aaa;
+}
+
+.service{
+    color:#D6C29C;
+    font-weight:700;
+    font-size:14px;
+}
+
+.note{
+    font-size:13px;
+    color:#ccc;
+}
+
+/* ================= SELECT ================= */
+select{
+    width:100%;
+    background:#0f0f0f;
+    color:#fff;
+    border:1px solid #333;
+    padding:8px;
+    border-radius:6px;
+    font-size:13px;
+}
+
+/* ================= BADGES ================= */
+.badge{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.pending{background:#3a2f12;color:#ffd86b;}
+.confirmed{background:#173527;color:#7dffaf;}
+.completed{background:#1a2c4b;color:#8fc5ff;}
+.cancelled{background:#3b1717;color:#ff9e9e;}
+
+.cash{background:#2d3b2f;color:#7dffaf;}
+.gcash{background:#1e2a3b;color:#8fc5ff;}
+
+/* ================= MOBILE ================= */
+@media(max-width:768px){
+    table{
+        font-size:13px;
+    }
+
+    th,td{
+        padding:10px 8px;
+    }
+}
+
 
 /* ================= CALENDAR SAFE FIX ================= */
 .calendar-box{
