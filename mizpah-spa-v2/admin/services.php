@@ -1,144 +1,143 @@
 <?php
 session_start();
-include '../includes/db.php';
+
+/* ================= DB (ROOT) ================= */
+include __DIR__ . '/../includes/db.php';
+
+if(!isset($conn)){
+    die("DB connection failed");
+}
 
 if(!isset($_SESSION['user_id'])){
 header("Location: ../login.php");
 exit;
 }
 
+/* ================= ADD SERVICE ================= */
+if(isset($_POST['add_service'])){
+
+$name     = mysqli_real_escape_string($conn,$_POST['service_name']);
+$desc     = mysqli_real_escape_string($conn,$_POST['description']);
+$category = mysqli_real_escape_string($conn,$_POST['category']);
+
+mysqli_query($conn,"
+INSERT INTO services (service_name, description, category)
+VALUES ('$name','$desc','$category')
+");
+
+$service_id = mysqli_insert_id($conn);
+
+/* durations */
+if(!empty($_POST['duration'])){
+    foreach($_POST['duration'] as $i=>$dur){
+
+        $dur   = mysqli_real_escape_string($conn,$dur);
+        $price = mysqli_real_escape_string($conn,$_POST['price'][$i]);
+
+        if($dur && $price){
+            mysqli_query($conn,"
+            INSERT INTO service_durations (service_id,duration,price)
+            VALUES ('$service_id','$dur','$price')
+            ");
+        }
+    }
+}
+
+echo "<script>alert('Service Added');window.location='services.php';</script>";
+exit;
+}
+
 /* ================= UPDATE SERVICE ================= */
 if(isset($_POST['update_service'])){
 
-$id          = $_POST['id'];
-$name        = mysqli_real_escape_string($conn,$_POST['service_name']);
-$desc        = mysqli_real_escape_string($conn,$_POST['description']);
-$price       = mysqli_real_escape_string($conn,$_POST['price']);
-$duration    = mysqli_real_escape_string($conn,$_POST['duration']);
-$category    = mysqli_real_escape_string($conn,$_POST['category']);
+$id       = (int)$_POST['id'];
+$name     = mysqli_real_escape_string($conn,$_POST['service_name']);
+$desc     = mysqli_real_escape_string($conn,$_POST['description']);
+$category = mysqli_real_escape_string($conn,$_POST['category']);
 
 mysqli_query($conn,"
 UPDATE services SET
 service_name='$name',
 description='$desc',
-price='$price',
-duration='$duration',
 category='$category'
 WHERE id='$id'
 ");
 
-echo "<script>alert('Service Updated!');window.location='services.php';</script>";
+/* delete old durations then reinsert (para walang duplicate) */
+mysqli_query($conn,"DELETE FROM service_durations WHERE service_id='$id'");
+
+if(!empty($_POST['duration'])){
+    foreach($_POST['duration'] as $i=>$dur){
+
+        $dur   = mysqli_real_escape_string($conn,$dur);
+        $price = mysqli_real_escape_string($conn,$_POST['price'][$i]);
+
+        if($dur && $price){
+            mysqli_query($conn,"
+            INSERT INTO service_durations (service_id,duration,price)
+            VALUES ('$id','$dur','$price')
+            ");
+        }
+    }
+}
+
+echo "<script>alert('Updated');window.location='services.php';</script>";
 exit;
 }
 
-/* ================= DATA ================= */
+/* ================= GET DATA ================= */
 $services = mysqli_query($conn,"SELECT * FROM services ORDER BY id DESC");
-
-$total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM services"))['total'] ?? 0;
-
-$massage = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM services WHERE category='Massage'"))['total'] ?? 0;
-
-$package = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM services WHERE category='Package'"))['total'] ?? 0;
-
-$addon = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM services WHERE category='Add-on'"))['total'] ?? 0;
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Services</title>
 
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <style>
+body{
+background:#0b0b0b;
+color:#fff;
+font-family:Poppins;
+}
 
 .main{
 margin-left:260px;
 padding:30px;
-background:#0b0b0b;
-min-height:100vh;
-color:#fff;
-}
-
-/* HEADER */
-.header h1{
-color:#D6C29C;
-margin-bottom:20px;
-}
-
-/* STATS */
-.stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:15px;
-margin-bottom:20px;
-}
-
-.stat{
-background:#161616;
-padding:18px;
-border-radius:12px;
-border:1px solid rgba(214,194,156,.12);
-}
-
-.stat h3{
-color:#D6C29C;
-font-size:13px;
-}
-
-.stat p{
-font-size:24px;
-font-weight:700;
-}
-
-/* TABLE */
-.table-box{
-background:#161616;
-border-radius:14px;
-overflow:auto;
-border:1px solid rgba(214,194,156,.12);
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-min-width:900px;
 }
 
-th{
-background:#1d1d1d;
-color:#D6C29C;
-padding:14px;
-text-align:left;
+th,td{
+padding:12px;
+border-bottom:1px solid #222;
 }
 
-td{
-padding:14px;
-border-top:1px solid rgba(255,255,255,.05);
-font-size:14px;
+th{color:#D6C29C;}
+
+button{
+padding:6px 10px;
+border:none;
+border-radius:6px;
+cursor:pointer;
 }
 
-tr:hover{background:#111;}
-
-.price{
-color:#D6C29C;
-font-weight:700;
+.addbtn{
+background:#1f3d2b;
+color:#7dffaf;
+margin-bottom:15px;
 }
 
-/* BADGE */
-.badge{
-padding:4px 10px;
-border-radius:20px;
-font-size:12px;
-font-weight:700;
+.editbtn{
+background:#D6C29C;
+color:#111;
 }
-
-.Massage{background:#1a2c4b;color:#8fc5ff;}
-.Package{background:#2d2a14;color:#ffd86b;}
-.Add-on{background:#2a1a1a;color:#ffb3b3;}
-.Promo{background:#1f2a1f;color:#9effa5;}
 
 /* MODAL */
 .modal{
@@ -150,18 +149,10 @@ background:rgba(0,0,0,.7);
 
 .modal-content{
 background:#161616;
-width:420px;
-margin:8% auto;
-padding:25px;
-border-radius:14px;
-border:1px solid rgba(214,194,156,.2);
-}
-
-label{
-display:block;
-margin:8px 0 4px;
-font-size:12px;
-color:#D6C29C;
+width:500px;
+margin:5% auto;
+padding:20px;
+border-radius:10px;
 }
 
 input,textarea,select{
@@ -169,150 +160,157 @@ width:100%;
 padding:10px;
 margin-bottom:10px;
 background:#0b0b0b;
+color:#fff;
 border:1px solid #333;
-color:#fff;
-border-radius:8px;
 }
 
-button{
-width:100%;
-padding:12px;
-background:#D6C29C;
-border:none;
-border-radius:10px;
-font-weight:700;
-cursor:pointer;
+.addrow{
+display:flex;
+gap:10px;
+margin-bottom:8px;
 }
-
-button:hover{opacity:.9;}
-
-.close{
-float:right;
-cursor:pointer;
-color:#fff;
-}
-
+.addrow input{flex:1;}
 </style>
 </head>
 
 <body>
 
+<!-- FIXED SIDEBAR PATH -->
 <?php include __DIR__.'/includes/sidebar.php'; ?>
 
 <div class="main">
 
-<div class="header">
-<h1>Services Management</h1>
-</div>
+<h2>Services Management</h2>
 
-<!-- STATS -->
-<div class="stats">
-
-<div class="stat">
-<h3>Total Services</h3>
-<p><?= $total ?></p>
-</div>
-
-<div class="stat">
-<h3>Massage</h3>
-<p><?= $massage ?></p>
-</div>
-
-<div class="stat">
-<h3>Packages</h3>
-<p><?= $package ?></p>
-</div>
-
-<div class="stat">
-<h3>Add-ons</h3>
-<p><?= $addon ?></p>
-</div>
-
-</div>
-
-<!-- TABLE -->
-<div class="table-box">
+<button class="addbtn" onclick="document.getElementById('addModal').style.display='block'">
++ Add Service
+</button>
 
 <table>
 
 <tr>
-<th>ID</th>
 <th>Name</th>
-<th>Price</th>
-<th>Duration</th>
 <th>Category</th>
 <th>Description</th>
+<th>Durations</th>
 <th>Action</th>
 </tr>
 
-<?php while($row = mysqli_fetch_assoc($services)) { ?>
+<?php while($row=mysqli_fetch_assoc($services)): ?>
+
+<?php
+$dur = mysqli_query($conn,"SELECT * FROM service_durations WHERE service_id=".$row['id']);
+?>
 
 <tr>
 
-<td><?= $row['id'] ?></td>
-
-<td><b><?= $row['service_name'] ?></b></td>
-
-<td class="price">₱<?= number_format($row['price'],2) ?></td>
-
-<td><?= $row['duration'] ?></td>
-
-<td><span class="badge <?= $row['category'] ?>"><?= $row['category'] ?></span></td>
-
-<td><?= $row['description'] ?></td>
+<td><?= htmlspecialchars($row['service_name']) ?></td>
+<td><?= $row['category'] ?></td>
+<td><?= htmlspecialchars($row['description']) ?></td>
 
 <td>
-<button onclick="openEdit(
+<?php while($d=mysqli_fetch_assoc($dur)): ?>
+✔ <?= $d['duration'] ?> - ₱<?= $d['price'] ?><br>
+<?php endwhile; ?>
+</td>
+
+<td>
+<button class="editbtn" onclick="openEdit(
 '<?= $row['id'] ?>',
 '<?= htmlspecialchars($row['service_name']) ?>',
 '<?= htmlspecialchars($row['description']) ?>',
-'<?= $row['price'] ?>',
-'<?= $row['duration'] ?>',
 '<?= $row['category'] ?>'
 )">Edit</button>
 </td>
 
 </tr>
 
-<?php } ?>
+<?php endwhile; ?>
 
 </table>
 
 </div>
 
+<!-- ADD MODAL -->
+<div class="modal" id="addModal">
+<div class="modal-content">
+
+<h3>Add Service</h3>
+
+<form method="POST">
+
+<input name="service_name" placeholder="Service Name" required>
+<textarea name="description" placeholder="Description"></textarea>
+
+<h4>Durations & Price</h4>
+
+<div id="wrap">
+
+<div class="addrow">
+<input name="duration[]" placeholder="e.g 1hr">
+<input name="price[]" placeholder="Price">
+</div>
+
+</div>
+
+<button type="button" onclick="addRow()">+ Add More</button>
+
+<br><br>
+
+<select name="category">
+<option>Massage</option>
+<option>Package</option>
+<option>Add-on</option>
+<option>Promo</option>
+</select>
+
+<br><br>
+
+<button name="add_service">Save</button>
+
+</form>
+
+</div>
 </div>
 
 <!-- EDIT MODAL -->
 <div class="modal" id="editModal">
 <div class="modal-content">
 
-<span class="close" onclick="document.getElementById('editModal').style.display='none'">X</span>
-
-<h3 style="color:#D6C29C;">Edit Service</h3>
+<h3>Edit Service</h3>
 
 <form method="POST">
 
 <input type="hidden" name="id" id="eid">
 
-<label>Service Name</label>
-<input type="text" name="service_name" id="ename">
-
-<label>Description</label>
+<input name="service_name" id="ename">
 <textarea name="description" id="edesc"></textarea>
 
-<label>Price</label>
-<input type="number" name="price" id="eprice">
-
-<label>Duration</label>
-<input type="text" name="duration" id="eduration">
-
-<label>Category</label>
-<select name="category" id="ecategory">
+<select name="category" id="ecat">
 <option>Massage</option>
 <option>Package</option>
 <option>Add-on</option>
 <option>Promo</option>
 </select>
+
+<h4>Durations & Price</h4>
+
+<div class="addrow">
+<input name="duration[]" placeholder="e.g 1hr">
+<input name="price[]" placeholder="Price">
+</div>
+
+<div class="addrow">
+<input name="duration[]" placeholder="e.g 1.5hr">
+<input name="price[]" placeholder="Price">
+</div>
+
+<div class="addrow">
+<input name="duration[]" placeholder="e.g 2hr">
+<input name="price[]" placeholder="Price">
+</div>
+
+<br>
 
 <button name="update_service">Update</button>
 
@@ -322,20 +320,25 @@ color:#fff;
 </div>
 
 <script>
-
-function openEdit(id,name,desc,price,duration,category){
-
-document.getElementById('editModal').style.display='block';
-
-document.getElementById('eid').value=id;
-document.getElementById('ename').value=name;
-document.getElementById('edesc').value=desc;
-document.getElementById('eprice').value=price;
-document.getElementById('eduration').value=duration;
-document.getElementById('ecategory').value=category;
-
+function addRow(){
+let div=document.createElement('div');
+div.className='addrow';
+div.innerHTML=`
+<input name="duration[]" placeholder="e.g 1hr">
+<input name="price[]" placeholder="Price">
+`;
+document.getElementById('wrap').appendChild(div);
 }
 
+function openEdit(id,name,desc,cat){
+
+eid.value=id;
+ename.value=name;
+edesc.value=desc;
+ecat.value=cat;
+
+document.getElementById('editModal').style.display='block';
+}
 </script>
 
 </body>

@@ -2,30 +2,38 @@
 session_start();
 include 'includes/db.php';
 
+/* ================= BOOKING INSERT ================= */
 if(isset($_POST['submit_booking'])){
+
+$service_id = $_POST['service_id'];
+$service = mysqli_real_escape_string($conn,$_POST['service']);
+$duration = mysqli_real_escape_string($conn,$_POST['duration']);
+$price = $_POST['price'];
 
 $name = mysqli_real_escape_string($conn,$_POST['customer_name']);
 $phone = mysqli_real_escape_string($conn,$_POST['phone']);
-$service = mysqli_real_escape_string($conn,$_POST['service']);
-$duration = mysqli_real_escape_string($conn,$_POST['duration']);
-$price = mysqli_real_escape_string($conn,$_POST['price']);
-$date = mysqli_real_escape_string($conn,$_POST['booking_date']);
-$time = mysqli_real_escape_string($conn,$_POST['booking_time']);
-$pax = mysqli_real_escape_string($conn,$_POST['pax']);
+$date = $_POST['booking_date'];
+$time = $_POST['booking_time'];
+$pax = $_POST['pax'];
+$payment = $_POST['payment_method'];
 $notes = mysqli_real_escape_string($conn,$_POST['notes']);
-$payment_method = mysqli_real_escape_string($conn,$_POST['payment_method']);
 
-$addons = $_POST['addons'] ?? "";
-if(is_array($addons)) $addons = implode(", ",$addons);
+/* VALIDATION */
+if(empty($service_id) || empty($duration) || empty($date) || empty($time)){
+    echo "<script>alert('Please complete service, duration, date and time');</script>";
+}else{
 
 mysqli_query($conn,"INSERT INTO bookings
-(customer_name,phone,service,duration,price,booking_date,booking_time,pax,addons,payment_method,notes,status)
+(service_id,service,duration,price,customer_name,phone,booking_date,booking_time,pax,payment_method,notes,status)
 VALUES
-('$name','$phone','$service','$duration','$price','$date','$time','$pax','$addons','$payment_method','$notes','Pending')
+('$service_id','$service','$duration','$price','$name','$phone','$date','$time','$pax','$payment','$notes','Pending')
 ");
 
 header("Location: thankyou.php");
 exit;
+
+}
+
 }
 ?>
 
@@ -44,381 +52,273 @@ background:#0b0b0b;
 color:#fff;
 }
 
-/* HEADER */
-.topbar{
-position:sticky;
-top:0;
-z-index:999;
-background:#111;
-padding:18px;
+.header{
+padding:20px;
 text-align:center;
+background:#111;
 color:#D6C29C;
 font-weight:600;
-border-bottom:1px solid #333;
+border-bottom:1px solid #222;
 }
 
-/* CONTAINER */
-.wrapper{
-max-width:900px;
+.container{
+max-width:950px;
 margin:auto;
-padding:20px;
+padding:25px;
 }
 
-/* SECTION */
-section{
-margin-bottom:25px;
+.section{
+margin-bottom:35px;
 }
 
-h3{
-color:#D6C29C;
+.section h3{
 text-align:center;
-margin-bottom:10px;
+color:#D6C29C;
+margin-bottom:15px;
 }
 
-/* SERVICE LIST (CLEAN) */
-.list{
-display:flex;
-flex-direction:column;
-gap:10px;
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:15px;
 }
 
-.item{
-background:#111;
-border:1px solid #333;
-padding:14px;
-border-radius:10px;
+.card{
+background:#161616;
+padding:16px;
+border-radius:14px;
+border:1px solid #222;
 cursor:pointer;
 transition:.2s;
 }
 
-.item:hover{
+.card:hover{
 border-color:#D6C29C;
+transform:translateY(-3px);
 }
 
-.item.active{
+.card.active{
 border:2px solid #D6C29C;
 }
 
-.item small{
+.card b{
+color:#D6C29C;
 display:block;
+margin-bottom:6px;
+}
+
+.small{
 font-size:12px;
 color:#aaa;
-margin-top:5px;
-line-height:1.4;
-}
-
-/* DURATION */
-.duration-box{
-display:flex;
-gap:10px;
-justify-content:center;
-}
-
-.duration{
-flex:1;
-background:#111;
-border:1px solid #333;
-padding:12px;
-text-align:center;
-border-radius:10px;
-cursor:pointer;
-}
-
-.duration.active{
-border:2px solid #D6C29C;
-}
-
-/* ADDONS */
-.addon-box{
-display:none;
-margin-top:10px;
-flex-direction:column;
-gap:10px;
-}
-
-.addon{
-background:#111;
-border:1px solid #333;
-padding:12px;
-border-radius:10px;
-cursor:pointer;
-text-align:center;
-}
-
-.addon.active{
-border:2px solid #D6C29C;
-}
-
-/* FORM */
-input,select,textarea{
-width:100%;
-padding:10px;
-margin-top:6px;
-background:#0d0d0d;
-border:1px solid #333;
-color:#fff;
-border-radius:6px;
+line-height:1.5;
 }
 
 /* TIME */
 .time-grid{
 display:grid;
 grid-template-columns:repeat(4,1fr);
-gap:8px;
+gap:10px;
 }
 
 .time{
-padding:10px;
-text-align:center;
 background:#111;
+padding:12px;
+border-radius:10px;
+text-align:center;
 border:1px solid #333;
-border-radius:8px;
 cursor:pointer;
-font-size:12px;
+font-size:13px;
 }
 
 .time.active{
 background:#D6C29C;
 color:#000;
+font-weight:600;
 }
 
-/* SUMMARY */
-.summary{
-background:#111;
+/* INPUTS */
+input,select,textarea{
+width:100%;
+padding:12px;
+margin-top:8px;
+background:#0d0d0d;
 border:1px solid #333;
-padding:15px;
-border-radius:10px;
-margin-top:20px;
+color:#fff;
+border-radius:8px;
 }
 
 /* BUTTON */
 button{
 width:100%;
-padding:12px;
-margin-top:15px;
+padding:14px;
 background:#D6C29C;
 border:none;
-font-weight:600;
-border-radius:8px;
+border-radius:10px;
+font-weight:700;
 cursor:pointer;
+margin-top:20px;
+}
+
+button:hover{
+opacity:.9;
 }
 </style>
 </head>
 
 <body>
 
-<div class="topbar">Mizpah Wellness Spa Booking</div>
+<div class="header">Mizpah Wellness Spa Booking</div>
 
-<div class="wrapper">
+<div class="container">
 
 <form method="POST">
 
+<!-- SERVICE -->
+<div class="section">
+<h3>Choose Service</h3>
+
+<div class="grid">
+
+<?php
+$services = mysqli_query($conn,"SELECT * FROM services");
+while($s=mysqli_fetch_assoc($services)):
+?>
+
+<div class="card"
+onclick="selectService(this,<?= $s['id'] ?>,'<?= $s['service_name'] ?>','<?= htmlspecialchars($s['description']) ?>')">
+
+<b><?= $s['service_name'] ?></b>
+<div class="small"><?= $s['description'] ?></div>
+
+</div>
+
+<?php endwhile; ?>
+
+</div>
+</div>
+
+<!-- HIDDEN -->
+<input type="hidden" name="service_id" id="service_id">
 <input type="hidden" name="service" id="service">
 <input type="hidden" name="duration" id="duration">
 <input type="hidden" name="price" id="price">
-<input type="hidden" name="addons" id="addons">
 <input type="hidden" name="booking_time" id="booking_time">
 
-<!-- SERVICE -->
-<section>
-<h3>Services</h3>
-
-<div class="list">
-
-<div class="item" onclick="selectService(this,'Swedish Massage',600)">
-<b>Swedish Massage</b>
-<small>Gentle relaxation massage using light pressure to melt stress.</small>
+<!-- DESCRIPTION -->
+<div class="section">
+<h3>Service Details</h3>
+<div class="card">
+<div class="small" id="descBox">Select a service to see details</div>
 </div>
-
-<div class="item" onclick="selectService(this,'MIZPAH Signature',750)">
-<b>MIZPAH Signature</b>
-<small>Swedish + Shiatsu + deep tissue + tool therapy blend.</small>
 </div>
-
-<div class="item" onclick="selectService(this,'Thai Massage',650)">
-<b>Thai Massage</b>
-<small>Stretching + pressure therapy for flexibility.</small>
-</div>
-
-<div class="item" onclick="selectService(this,'Shiatsu Massage',650)">
-<b>Shiatsu Massage</b>
-<small>Energy flow pressure massage technique.</small>
-</div>
-
-<div class="item" onclick="selectService(this,'Lymphatic Massage',850)">
-<b>Lymphatic Massage</b>
-<small>Detox + bloating reduction therapy.</small>
-</div>
-
-<div class="item" onclick="selectService(this,'Prenatal Massage',850)">
-<b>Prenatal Massage</b>
-<small>Safe massage for expecting mothers.</small>
-</div>
-
-</div>
-</section>
 
 <!-- DURATION -->
-<section>
-<h3>Duration</h3>
-
-<div class="duration-box">
-
-<div class="duration" onclick="setDuration(this,'1 hr',0)">1 Hour</div>
-<div class="duration" onclick="setDuration(this,'1.5 hr',200)">1.5 Hour</div>
-<div class="duration" onclick="setDuration(this,'2 hr',400)">2 Hour</div>
-
+<div class="section">
+<h3>Choose Duration</h3>
+<div id="durationBox" class="grid">Select service first</div>
 </div>
-</section>
 
-<!-- ADDONS -->
-<section>
-<h3 onclick="toggleAddons()" style="cursor:pointer;">
-Add-ons ▼
-</h3>
-
-<div class="addon-box" id="addonBox">
-
-<div class="addon" onclick="addon(this,'Hot Stone',300)">Hot Stone</div>
-<div class="addon" onclick="addon(this,'Ventosa',350)">Ventosa</div>
-<div class="addon" onclick="addon(this,'Foot Massage',350)">Foot Massage</div>
-<div class="addon" onclick="addon(this,'Head & Shoulder',350)">Head & Shoulder</div>
-<div class="addon" onclick="addon(this,'Kiddie Massage',400)">Kiddie Massage</div>
-
-</div>
-</section>
-
-<!-- SCHEDULE -->
-<section>
-<h3>Schedule</h3>
-
+<!-- DATE -->
+<div class="section">
+<h3>Date</h3>
 <input type="date" name="booking_date" required>
+</div>
+
+<!-- TIME -->
+<div class="section">
+<h3>Time</h3>
 
 <div class="time-grid">
 
-<div class="time" onclick="setTime(this,'15:00')">3 PM</div>
-<div class="time" onclick="setTime(this,'16:00')">4 PM</div>
-<div class="time" onclick="setTime(this,'17:00')">5 PM</div>
-<div class="time" onclick="setTime(this,'18:00')">6 PM</div>
-<div class="time" onclick="setTime(this,'19:00')">7 PM</div>
-<div class="time" onclick="setTime(this,'20:00')">8 PM</div>
-<div class="time" onclick="setTime(this,'21:00')">9 PM</div>
-<div class="time" onclick="setTime(this,'22:00')">10 PM</div>
-<div class="time" onclick="setTime(this,'23:00')">11 PM</div>
-<div class="time" onclick="setTime(this,'00:00')">12 AM</div>
-<div class="time" onclick="setTime(this,'01:00')">1 AM</div>
-<div class="time" onclick="setTime(this,'02:00')">2 AM</div>
+<div class="time" onclick="setTime(this,'3:00 PM')">3:00 PM</div>
+<div class="time" onclick="setTime(this,'4:00 PM')">4:00 PM</div>
+<div class="time" onclick="setTime(this,'5:00 PM')">5:00 PM</div>
+<div class="time" onclick="setTime(this,'6:00 PM')">6:00 PM</div>
+<div class="time" onclick="setTime(this,'7:00 PM')">7:00 PM</div>
+<div class="time" onclick="setTime(this,'8:00 PM')">8:00 PM</div>
+<div class="time" onclick="setTime(this,'9:00 PM')">9:00 PM</div>
+<div class="time" onclick="setTime(this,'10:00 PM')">10:00 PM</div>
+<div class="time" onclick="setTime(this,'11:00 PM')">11:00 PM</div>
+<div class="time" onclick="setTime(this,'12:00 AM')">12:00 AM</div>
 
 </div>
-</section>
+
+</div>
 
 <!-- DETAILS -->
-<section>
-<h3>Details</h3>
+<div class="section">
+<h3>Customer Details</h3>
 
-<input name="customer_name" placeholder="Name" required>
-<input name="phone" placeholder="Phone" required>
+<input name="customer_name" placeholder="Full Name" required>
+<input name="phone" placeholder="Phone Number" required>
 
 <select name="payment_method">
 <option>Cash</option>
 <option>GCash</option>
 </select>
 
-<select name="pax">
-<option>1</option><option>2</option><option>3</option>
-<option>4</option><option>5</option><option>6</option>
-</select>
+<input name="pax" type="number" value="1">
 
-<textarea name="notes" placeholder="Notes"></textarea>
+<textarea name="notes" placeholder="Notes (optional)"></textarea>
 
-<button type="submit" name="submit_booking">CONFIRM BOOKING</button>
+</div>
 
-</section>
+<button name="submit_booking">CONFIRM BOOKING</button>
 
 </form>
-
-<!-- SUMMARY -->
-<div class="summary">
-<h3>Booking Summary</h3>
-<p>Service: <span id="s">-</span></p>
-<p>Duration: <span id="d">-</span></p>
-<p>Add-ons: <span id="a">-</span></p>
-<p>Time: <span id="t">-</span></p>
-<p>Total: ₱<span id="p">0</span></p>
-</div>
 
 </div>
 
 <script>
 
-let data={
-service:"",
-duration:"",
-price:0,
-addons:[],
-time:""
-};
+function selectService(el,id,name,desc){
 
-function selectService(el,name,price){
-document.querySelectorAll(".item").forEach(c=>c.classList.remove("active"));
-el.classList.add("active");
+document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
 
-data.service=name;
-data.price=price;
+document.getElementById('service_id').value = id;
+document.getElementById('service').value = name;
+document.getElementById('descBox').innerText = desc;
 
-document.getElementById("service").value=name;
-document.getElementById("price").value=price;
-update();
+/* LOAD DURATION */
+fetch("get_duration.php?id="+id)
+.then(res=>res.json())
+.then(data=>{
+
+let html="";
+
+data.forEach(d=>{
+html += `
+<div class="card"
+onclick="selectDuration('${d.duration}',${d.price},this)">
+<b>${d.duration}</b>
+<div class="small">₱${d.price}</div>
+</div>`;
+});
+
+document.getElementById("durationBox").innerHTML = html;
+
+});
+
 }
 
-function setDuration(el,dur,extra){
-document.querySelectorAll(".duration").forEach(c=>c.classList.remove("active"));
-el.classList.add("active");
+function selectDuration(duration,price,el){
 
-data.duration=dur;
-data.price+=extra;
+document.querySelectorAll('#durationBox .card')
+.forEach(c=>c.classList.remove('active'));
 
-document.getElementById("duration").value=dur;
-document.getElementById("price").value=data.price;
-update();
-}
+el.classList.add('active');
 
-function addon(el,name,price){
-el.classList.toggle("active");
-
-if(el.classList.contains("active")){
-data.addons.push(name);
-data.price+=price;
-}else{
-data.addons=data.addons.filter(a=>a!==name);
-data.price-=price;
-}
-
-document.getElementById("addons").value=data.addons.join(", ");
-document.getElementById("price").value=data.price;
-update();
+document.getElementById('duration').value = duration;
+document.getElementById('price').value = price;
 }
 
 function setTime(el,time){
-document.querySelectorAll(".time").forEach(t=>t.classList.remove("active"));
-el.classList.add("active");
 
-data.time=time;
-document.getElementById("booking_time").value=time;
-update();
-}
+document.querySelectorAll('.time').forEach(t=>t.classList.remove('active'));
+el.classList.add('active');
 
-function toggleAddons(){
-let box=document.getElementById("addonBox");
-box.style.display = box.style.display==="flex"?"none":"flex";
-}
-
-function update(){
-document.getElementById("s").innerText=data.service||"-";
-document.getElementById("d").innerText=data.duration||"-";
-document.getElementById("a").innerText=data.addons.join(", ")||"-";
-document.getElementById("t").innerText=data.time||"-";
-document.getElementById("p").innerText=data.price||0;
+document.getElementById('booking_time').value = time;
 }
 
 </script>

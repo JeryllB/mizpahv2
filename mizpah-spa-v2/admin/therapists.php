@@ -15,52 +15,29 @@ if(isset($_POST['save_therapist'])){
 $id           = intval($_POST['id'] ?? 0);
 $name         = mysqli_real_escape_string($conn,$_POST['name']);
 $specialty    = mysqli_real_escape_string($conn,$_POST['specialty']);
-$rating       = mysqli_real_escape_string($conn,$_POST['rating']);
 $best_service = mysqli_real_escape_string($conn,$_POST['best_service']);
 $bio          = mysqli_real_escape_string($conn,$_POST['bio']);
 $schedule     = mysqli_real_escape_string($conn,$_POST['schedule']);
 $status       = mysqli_real_escape_string($conn,$_POST['status']);
 
-$imageName = "";
-
-if(isset($_FILES['image']) && $_FILES['image']['error']==0 && $_FILES['image']['name']!=""){
-$imageName = time().'_'.$_FILES['image']['name'];
-move_uploaded_file($_FILES['image']['tmp_name'],"../assets/images/therapists/".$imageName);
-}
-
 if($id > 0){
 
-// UPDATE
-if($imageName!=""){
 mysqli_query($conn,"UPDATE therapists SET
 name='$name',
 specialty='$specialty',
-rating='$rating',
-best_service='$best_service',
-bio='$bio',
-schedule='$schedule',
-status='$status',
-image='$imageName'
-WHERE id='$id'");
-}else{
-mysqli_query($conn,"UPDATE therapists SET
-name='$name',
-specialty='$specialty',
-rating='$rating',
 best_service='$best_service',
 bio='$bio',
 schedule='$schedule',
 status='$status'
 WHERE id='$id'");
-}
 
 }else{
 
-// INSERT NEW
 mysqli_query($conn,"INSERT INTO therapists
-(name,image,specialty,rating,best_service,bio,schedule,status)
+(name,specialty,best_service,bio,schedule,status)
 VALUES
-('$name','$imageName','$specialty','$rating','$best_service','$bio','$schedule','$status')");
+('$name','$specialty','$best_service','$bio','$schedule','$status')");
+
 }
 
 header("Location: therapists.php");
@@ -68,7 +45,7 @@ exit;
 }
 
 /* =========================
-   EDIT DATA
+   EDIT
 ========================= */
 $edit = null;
 
@@ -79,22 +56,42 @@ $edit = mysqli_fetch_assoc($q);
 }
 
 /* =========================
-   LIST + EARNINGS + SESSIONS
+   LIST + EARNINGS + RATINGS
 ========================= */
 $list = mysqli_query($conn,"
-SELECT t.*,
-IFNULL(SUM(b.price * b.pax),0) as earnings,
-COUNT(b.id) as sessions
+SELECT 
+t.*,
+
+/* sessions */
+(
+SELECT COUNT(DISTINCT bt.booking_id)
+FROM booking_therapists bt
+JOIN bookings b ON b.id = bt.booking_id
+WHERE bt.therapist_id=t.id
+AND b.status='Completed'
+) as sessions,
+
+/* earnings */
+(
+SELECT IFNULL(SUM(500),0)
+FROM booking_therapists bt
+JOIN bookings b ON b.id = bt.booking_id
+WHERE bt.therapist_id=t.id
+AND b.status='Completed'
+) as earnings,
+
+/* ratings */
+(
+SELECT IFNULL(AVG(rating),0)
+FROM therapist_ratings tr
+WHERE tr.therapist_id=t.id
+) as rating
+
 FROM therapists t
-LEFT JOIN bookings b 
-ON t.id = b.therapist_id AND b.status='Completed'
-GROUP BY t.id
 ORDER BY t.id DESC
 ");
 
-/* =========================
-   COUNTS
-========================= */
+/* COUNTS */
 $total = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM therapists"))['total'];
 $active = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM therapists WHERE status='Active'"))['total'];
 $inactive = mysqli_fetch_assoc(mysqli_query($conn,"SELECT COUNT(*) total FROM therapists WHERE status='Inactive'"))['total'];
@@ -188,17 +185,16 @@ font-weight:600;
 
 <h2>Therapists Management</h2>
 
-<!-- STATS -->
 <div class="card">
 Total: <?= $total ?> |
 Active: <?= $active ?> |
 Inactive: <?= $inactive ?>
 </div>
 
-<!-- ADD / EDIT FORM -->
+<!-- FORM -->
 <div class="card">
 
-<form method="POST" enctype="multipart/form-data">
+<form method="POST">
 
 <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
 
@@ -207,9 +203,6 @@ Inactive: <?= $inactive ?>
 
 <label>Specialty</label>
 <input type="text" name="specialty" value="<?= $edit['specialty'] ?? '' ?>">
-
-<label>Rating</label>
-<input type="number" step="0.1" max="5" min="0" name="rating" value="<?= $edit['rating'] ?? 5 ?>">
 
 <label>Best Service</label>
 <input type="text" name="best_service" value="<?= $edit['best_service'] ?? '' ?>">
@@ -225,9 +218,6 @@ Inactive: <?= $inactive ?>
 
 <label>Bio</label>
 <textarea name="bio"><?= $edit['bio'] ?? '' ?></textarea>
-
-<label>Image</label>
-<input type="file" name="image">
 
 <button type="submit" name="save_therapist">
 <?= $edit ? 'Update Therapist' : 'Add Therapist' ?>
@@ -258,7 +248,7 @@ Inactive: <?= $inactive ?>
 
 <td><?= $row['name'] ?></td>
 <td><?= $row['specialty'] ?></td>
-<td>⭐ <?= $row['rating'] ?></td>
+<td>⭐ <?= number_format($row['rating'],1) ?></td>
 <td><?= $row['sessions'] ?></td>
 <td>₱<?= number_format($row['earnings'],2) ?></td>
 
