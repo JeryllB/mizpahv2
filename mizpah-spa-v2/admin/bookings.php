@@ -7,9 +7,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-/* =========================
-   THERAPIST CONFLICT CHECK
-========================= */
+/* ================= CONFLICT CHECK ================= */
 function hasConflict($conn, $therapist_id, $date, $time) {
 
     $q = mysqli_query($conn,"
@@ -25,9 +23,7 @@ function hasConflict($conn, $therapist_id, $date, $time) {
     return mysqli_num_rows($q) > 0;
 }
 
-/* =========================
-   ASSIGN / REMOVE THERAPIST
-========================= */
+/* ================= ASSIGN THERAPIST ================= */
 if (isset($_POST['ajax_assign'])) {
 
     $booking_id = (int)$_POST['booking_id'];
@@ -74,9 +70,7 @@ if (isset($_POST['ajax_assign'])) {
     exit;
 }
 
-/* =========================
-   STATUS UPDATE + ⭐ RATING SYSTEM ADDED
-========================= */
+/* ================= STATUS UPDATE (FIXED) ================= */
 if (isset($_POST['update_status'])) {
 
     $id = (int)$_POST['id'];
@@ -88,38 +82,11 @@ if (isset($_POST['update_status'])) {
         WHERE id='$id'
     ");
 
-    /* =========================
-       AUTO INSERT THERAPIST RATINGS
-       WHEN COMPLETED
-    ========================= */
-    if ($status == 'Completed') {
-
-        $q = mysqli_query($conn,"
-            SELECT therapist_id 
-            FROM booking_therapists
-            WHERE booking_id='$id'
-        ");
-
-        while ($t = mysqli_fetch_assoc($q)) {
-
-            $therapist_id = $t['therapist_id'];
-
-            // default rating (5 stars auto)
-            $rating = 5;
-
-            mysqli_query($conn,"
-                INSERT INTO therapist_ratings (booking_id, therapist_id, rating)
-                VALUES ('$id', '$therapist_id', '$rating')
-            ");
-        }
-    }
-
+    header("Location: bookings.php");
     exit;
 }
 
-/* =========================
-   DATA
-========================= */
+/* ================= DATA ================= */
 $bookings = mysqli_query($conn,"
 SELECT * FROM bookings
 ORDER BY booking_date DESC, booking_time DESC
@@ -132,17 +99,22 @@ $therapists = mysqli_query($conn,"SELECT * FROM therapists WHERE status='Active'
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bookings</title>
-
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <style>
-body{
+*{
     margin:0;
-    font-family:Poppins;
-    background:#0b0b0b;
+    padding:0;
+    box-sizing:border-box;
+    outline:none !important;
+}
+
+body{
+    font-family:Poppins,sans-serif;
     color:#fff;
+    overflow-x:hidden;
+    background:#0b0b0b;
 }
 
 .main{
@@ -152,43 +124,61 @@ body{
 
 table{
     width:100%;
-    border-collapse:collapse;
-}
-
-th,td{
-    padding:12px;
-    border-bottom:1px solid #222;
-    vertical-align:top;
+    border-collapse:separate !important;
+    border-spacing:0 12px !important;
 }
 
 th{
-    color:#D6C29C;
     text-align:left;
+    padding:14px;
+    color:#D6C29C;
+    background:transparent !important;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+tr{
+    background:rgba(255,255,255,0.04) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition:0.2s;
+}
+
+td{
+    background:transparent !important;
+    padding:14px;
+    border:none !important;
+    vertical-align:top;
+}
+
+tr:hover{
+    background:rgba(214,194,156,0.08) !important;
+    transform:scale(1.01);
 }
 
 select{
-    padding:6px;
-    background:#161616;
+    width:100%;
+    padding:8px;
+    background:#111;
+    border:1px solid rgba(255,255,255,0.1);
     color:#fff;
-    border:1px solid #333;
-    border-radius:6px;
+    border-radius:8px;
 }
 
 .badge{
-    font-size:12px;
-    padding:3px 6px;
-    border-radius:6px;
     display:inline-block;
-    margin-bottom:5px;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:11px;
+    margin-bottom:6px;
 }
 
 .ok{
-    background:#1f3d2b;
+    background:rgba(125,255,175,0.12);
     color:#7dffaf;
 }
 
 .none{
-    background:#3d3a1f;
+    background:rgba(255,224,138,0.12);
     color:#ffe08a;
 }
 
@@ -266,9 +256,7 @@ if(mysqli_num_rows($bt) > 0){
 mysqli_data_seek($therapists,0);
 while($t=mysqli_fetch_assoc($therapists)):
 ?>
-<option value="<?= $t['id'] ?>">
-<?= $t['name'] ?>
-</option>
+<option value="<?= $t['id'] ?>"><?= $t['name'] ?></option>
 <?php endwhile; ?>
 
 </select>
@@ -280,12 +268,15 @@ while($t=mysqli_fetch_assoc($therapists)):
 <td>
 <form method="POST">
 <input type="hidden" name="id" value="<?= $row['id'] ?>">
+
 <select name="status" onchange="this.form.submit()">
 <option <?= $row['status']=='Pending'?'selected':'' ?>>Pending</option>
 <option <?= $row['status']=='Confirmed'?'selected':'' ?>>Confirmed</option>
 <option <?= $row['status']=='Completed'?'selected':'' ?>>Completed</option>
 <option <?= $row['status']=='Cancelled'?'selected':'' ?>>Cancelled</option>
 </select>
+
+<input type="hidden" name="update_status" value="1">
 </form>
 </td>
 
@@ -308,7 +299,7 @@ fetch("bookings.php", {
 .then(res=>res.text())
 .then(res=>{
     if(res.trim()=="CONFLICT"){
-        alert("❌ Therapist already booked on this schedule!");
+        alert("❌ Conflict schedule!");
     } else {
         location.reload();
     }

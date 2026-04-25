@@ -1,7 +1,7 @@
 <?php
 include 'includes/db.php';
 
-$id = $_GET['id'] ?? 0;
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 $q = mysqli_query($conn,"SELECT * FROM bookings WHERE id='$id'");
 $data = mysqli_fetch_assoc($q);
@@ -10,33 +10,79 @@ $data = mysqli_fetch_assoc($q);
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
 <title>Booking Confirmed</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
 body{
+margin:0;
+font-family:Poppins,sans-serif;
 background:#0b0b0b;
 color:#fff;
-font-family:Poppins;
-text-align:center;
-padding:50px;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:20px;
 }
 
 .box{
+width:100%;
+max-width:520px;
 background:#161616;
-padding:25px;
-border-radius:12px;
-max-width:500px;
-margin:auto;
-border:1px solid #333;
+padding:30px;
+border-radius:16px;
+border:1px solid #2a2a2a;
 }
 
 h1{
+text-align:center;
 color:#D6C29C;
+margin:0 0 10px;
 }
 
-span{
+.sub{
+text-align:center;
+color:#aaa;
+margin-bottom:25px;
+font-size:14px;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+gap:15px;
+padding:12px 0;
+border-bottom:1px solid #222;
+}
+
+.label{
 color:#D6C29C;
 font-weight:600;
+}
+
+.value{
+text-align:right;
+}
+
+.btn{
+display:block;
+margin-top:25px;
+text-align:center;
+padding:14px;
+background:#D6C29C;
+color:#111;
+text-decoration:none;
+font-weight:700;
+border-radius:10px;
+}
+
+.empty{
+text-align:center;
+color:#aaa;
+padding:20px 0;
 }
 </style>
 </head>
@@ -45,19 +91,82 @@ font-weight:600;
 
 <div class="box">
 
+<?php if($data): ?>
+
 <h1>Booking Confirmed</h1>
+<div class="sub">Thank you for choosing Mizpah Wellness Spa</div>
 
-<p>Thank you for choosing Mizpah Wellness Spa</p>
+<div class="row">
+<div class="label">Booking ID</div>
+<div class="value"><?= $data['id'] ?></div>
+</div>
 
-<p><span>Name:</span> <?= $data['customer_name'] ?? 'Guest' ?></p>
-<p><span>Service:</span> <?= $data['service'] ?? 'Not specified' ?></p>
-<p><span>Date:</span> <?= $data['booking_date'] ?? 'Not set' ?></p>
-<p><span>Time:</span> <?= $data['booking_time'] ?? 'Not set' ?></p>
-<p><span>Total Price:</span> ₱<?= $data['price'] ?? 0 ?></p>
-<p><span>Status:</span> <?= $data['status'] ?? 'Pending' ?></p>
+<div class="row">
+<div class="label">Name</div>
+<div class="value"><?= htmlspecialchars($data['customer_name']) ?></div>
+</div>
 
-<br><br>
-<a href="index.php" style="color:#D6C29C;">Back to Home</a>
+<div class="row">
+<div class="label">Service</div>
+<div class="value"><?= htmlspecialchars($data['service']) ?></div>
+</div>
+
+<div class="row">
+<div class="label">Duration</div>
+<div class="value"><?= htmlspecialchars($data['duration']) ?></div>
+</div>
+
+<div class="row">
+<div class="label">Date</div>
+<div class="value"><?= htmlspecialchars($data['booking_date']) ?></div>
+</div>
+
+<div class="row">
+<div class="label">Time</div>
+<div class="value"><?= htmlspecialchars($data['booking_time']) ?></div>
+</div>
+
+<div class="row">
+<div class="label">Phone</div>
+<div class="value"><?= htmlspecialchars($data['phone']) ?></div>
+</div>
+
+<div class="row">
+<div class="label">Pax</div>
+<div class="value"><?= htmlspecialchars($data['pax']) ?></div>
+</div>
+
+<div class="row">
+<div class="label">Payment</div>
+<div class="value"><?= htmlspecialchars($data['payment_method']) ?></div>
+</div>
+
+<div class="row">
+<div class="label">Total Price</div>
+<div class="value">₱<?= number_format($data['price'],2) ?></div>
+</div>
+
+<div class="row">
+<div class="label">Status</div>
+<div class="value"><?= htmlspecialchars($data['status']) ?></div>
+</div>
+
+<?php if(!empty($data['notes'])): ?>
+<div class="row">
+<div class="label">Notes</div>
+<div class="value"><?= htmlspecialchars($data['notes']) ?></div>
+</div>
+<?php endif; ?>
+
+<a href="index.php" class="btn">Back to Home</a>
+
+<?php else: ?>
+
+<h1>No Booking Found</h1>
+<div class="empty">Booking details unavailable.</div>
+<a href="index.php" class="btn">Back to Home</a>
+
+<?php endif; ?>
 
 </div>
 

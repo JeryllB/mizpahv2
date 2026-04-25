@@ -1,229 +1,198 @@
 <?php
 session_start();
-include '../includes/db.php';
 
-if (!$conn) {
-    die("Database connection failed");
+/* FIXED PATH (IMPORTANT) */
+include __DIR__ . '/../includes/db.php';
+
+/* CHECK LOGIN */
+if(!isset($_SESSION['user_id'])){
+header("Location: ../login.php");
+exit;
 }
 
-/* ================= INSERT BOOKING ================= */
-if (isset($_POST['submit_booking'])) {
+/* GET USER */
+$user_id = $_SESSION['user_id'];
 
-    $user_id = $_SESSION['user_id'] ?? null;
+$user = mysqli_fetch_assoc(mysqli_query($conn,"
+SELECT * FROM users WHERE id='$user_id'
+"));
 
-    $customer_name = mysqli_real_escape_string($conn, $_POST['customer_name']);
-    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
+/* SUBMIT BOOKING */
+if(isset($_POST['submit_booking'])){
 
-    $service_id = (int)$_POST['service_id'];
-    $service = mysqli_real_escape_string($conn, $_POST['service']);
+$name = $user['name'];
 
-    $duration = mysqli_real_escape_string($conn, $_POST['duration']);
-    $price = mysqli_real_escape_string($conn, $_POST['price']);
+$service_id = $_POST['service_id'];
+$service = $_POST['service'];
+$duration = $_POST['duration'];
+$price = $_POST['price'];
 
-    $booking_date = mysqli_real_escape_string($conn, $_POST['booking_date']);
-    $booking_time = mysqli_real_escape_string($conn, $_POST['booking_time']);
+$date = $_POST['booking_date'];
+$time = $_POST['booking_time'];
+$pax = (int)$_POST['pax'];
+$payment = $_POST['payment_method'];
+$notes = $_POST['notes'];
+$therapist = $_POST['therapist'] ?? '';
 
-    $pax = mysqli_real_escape_string($conn, $_POST['pax']);
-    $notes = mysqli_real_escape_string($conn, $_POST['notes']);
-    $payment_method = mysqli_real_escape_string($conn, $_POST['payment_method']);
+if($pax > 6){
+die("Max 6 pax only");
+}
 
-    $therapist_id = (int)($_POST['therapist_id'] ?? 0);
+/* SLOT CHECK */
+$check = mysqli_fetch_assoc(mysqli_query($conn,"
+SELECT COALESCE(SUM(pax),0) as total
+FROM bookings
+WHERE booking_date='$date'
+AND booking_time='$time'
+AND status!='Cancelled'
+"));
 
-    $addons = $_POST['addons'] ?? "";
-    if (is_array($addons)) {
-        $addons = implode(", ", $addons);
-    }
+if($check['total'] + $pax > 6){
+die("Slot full");
+}
 
-    mysqli_query($conn,"
-        INSERT INTO bookings (
-            user_id, customer_name, phone,
-            service, service_id,
-            duration, price,
-            booking_date, booking_time,
-            pax, addons, notes,
-            payment_method, therapist_id, status
-        )
-        VALUES (
-            '$user_id','$customer_name','$phone',
-            '$service','$service_id',
-            '$duration','$price',
-            '$booking_date','$booking_time',
-            '$pax','$addons','$notes',
-            '$payment_method','$therapist_id','Pending'
-        )
-    ");
+/* INSERT BOOKING */
+mysqli_query($conn,"INSERT INTO bookings
+(user_id,service_id,service,duration,price,customer_name,booking_date,booking_time,pax,payment_method,notes,status)
+VALUES
+('$user_id','$service_id','$service','$duration','$price','$name','$date','$time','$pax','$payment','$notes','Pending')
+");
 
-    header("Location: thankyou.php");
-    exit;
+$booking_id = mysqli_insert_id($conn);
+
+/* SAVE THERAPIST */
+if($therapist != ""){
+
+$t = mysqli_fetch_assoc(mysqli_query($conn,"
+SELECT id FROM therapists WHERE name='$therapist'
+"));
+
+$tid = $t['id'];
+
+mysqli_query($conn,"
+INSERT INTO booking_therapists
+(booking_id,therapist_id,booking_date,booking_time)
+VALUES
+('$booking_id','$tid','$date','$time')
+");
+}
+
+header("Location: thankyou.php?id=$booking_id");
+exit;
 }
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-<title>Mizpah Booking</title>
+<title>Customer Booking</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-body{
-margin:0;
-font-family:Poppins;
-background:#0b0b0b;
-color:#fff;
-}
-
-.wrapper{
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-
-h3{
-color:#D6C29C;
-text-align:center;
-margin-top:25px;
-}
-
-.item{
-background:#111;
-border:1px solid #333;
-padding:14px;
-margin-top:10px;
-border-radius:10px;
-cursor:pointer;
-}
-
-.item:hover{border-color:#D6C29C;}
-
-.item small{
-display:block;
-color:#aaa;
-font-size:12px;
-margin-top:4px;
-}
-
-input,select,textarea{
-width:100%;
-padding:10px;
-margin-top:6px;
-background:#111;
-border:1px solid #333;
-color:#fff;
-border-radius:6px;
-}
-
-button{
-width:100%;
-padding:12px;
-background:#D6C29C;
-border:none;
-font-weight:600;
-margin-top:15px;
-cursor:pointer;
-}
+body{margin:0;background:#0b0b0b;color:#fff;font-family:Poppins;}
+.header{text-align:center;padding:20px;color:#D6C29C;font-weight:600;border-bottom:1px solid #222;}
+.container{max-width:1000px;margin:auto;padding:20px;}
+.section{margin-bottom:25px;}
+h3{text-align:center;color:#D6C29C;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+.card{background:#141414;padding:14px;border-radius:12px;border:1px solid #222;cursor:pointer;}
+.card.active{border:2px solid #D6C29C;}
+.small{font-size:12px;color:#aaa;}
+input,select,textarea{width:100%;padding:12px;margin-top:8px;background:#111;border:1px solid #333;color:#fff;border-radius:8px;}
+button{width:100%;padding:14px;background:#D6C29C;border:none;font-weight:700;margin-top:15px;border-radius:10px;}
+.infoBox{padding:10px;background:#111;border-radius:10px;border:1px solid #333;text-align:center;}
 </style>
 </head>
 
 <body>
 
-<div class="wrapper">
+<div class="header">My Booking</div>
+
+<div class="container">
 
 <form method="POST">
 
-<!-- hidden -->
-<input type="hidden" name="service" id="service">
+<!-- USER -->
+<div class="section">
+<h3>Customer</h3>
+<div class="infoBox">
+<b><?= $user['name'] ?></b>
+</div>
+</div>
+
+<!-- SERVICE -->
+<div class="section">
+<h3>Service</h3>
+
+<div class="grid">
+<?php
+$s = mysqli_query($conn,"SELECT * FROM services");
+while($r=mysqli_fetch_assoc($s)):
+?>
+<div class="card"
+onclick="selectService(this,'<?= $r['id'] ?>','<?= $r['service_name'] ?>','<?= $r['description'] ?>')">
+
+<b><?= $r['service_name'] ?></b>
+<div class="small"><?= $r['description'] ?></div>
+
+</div>
+<?php endwhile; ?>
+</div>
+</div>
+
 <input type="hidden" name="service_id" id="service_id">
+<input type="hidden" name="service" id="service">
 <input type="hidden" name="duration" id="duration">
 <input type="hidden" name="price" id="price">
-<input type="hidden" name="addons" id="addons">
-<input type="hidden" name="booking_time" id="booking_time">
 
-<!-- ================= SERVICES (NO DUPLICATES FIX) ================= -->
-<h3>Services</h3>
-
-<?php
-$services = mysqli_query($conn,"
-SELECT service_name, MIN(id) as id
-FROM services
-WHERE category='Massage'
-GROUP BY service_name
-");
-
-while($s=mysqli_fetch_assoc($services)):
-?>
-<div class="item"
-onclick="loadDurations(<?= $s['id'] ?>,'<?= $s['service_name'] ?>')">
-
-<b><?= $s['service_name'] ?></b>
-
-</div>
-<?php endwhile; ?>
-
-<!-- ================= DURATIONS ================= -->
-<h3>Choose Duration</h3>
-<div id="durationBox"></div>
-
-<!-- ================= PACKAGES ================= -->
-<h3>Packages</h3>
-
-<div class="item" onclick="setPackage('Bronze Package',1600)">
-<b>Bronze Package - ₱1,600</b>
-<small>Basic full spa experience</small>
-</div>
-
-<div class="item" onclick="setPackage('Silver Package',1800)">
-<b>Silver Package - ₱1,800</b>
-<small>Enhanced relaxation package</small>
-</div>
-
-<div class="item" onclick="setPackage('Gold Package',2000)">
-<b>Gold Package - ₱2,000</b>
-<small>Premium luxury spa experience</small>
-</div>
-
-<!-- ================= THERAPIST ================= -->
-<h3>Therapist (Optional)</h3>
-
-<select name="therapist_id">
-<option value="0">No Preference</option>
-
-<?php
-$t = mysqli_query($conn,"SELECT * FROM therapists WHERE status='Active'");
-while($r=mysqli_fetch_assoc($t)):
-?>
-<option value="<?= $r['id'] ?>">
-<?= $r['name'] ?> - <?= $r['specialty'] ?>
-</option>
-<?php endwhile; ?>
-</select>
-
-<!-- ================= ADD ONS ================= -->
-<h3>Add-ons</h3>
-
-<?php
-$a = mysqli_query($conn,"SELECT * FROM services WHERE category='Add-on'");
-while($ad=mysqli_fetch_assoc($a)):
-?>
-<div class="item"
-onclick="toggleAddon('<?= $ad['service_name'] ?>',<?= $ad['price'] ?>)">
-
-<b><?= $ad['service_name'] ?></b>
-<small><?= $ad['description'] ?></small>
-
-</div>
-<?php endwhile; ?>
-
-<!-- ================= DETAILS ================= -->
+<!-- DETAILS -->
+<div class="section">
 <h3>Details</h3>
+<div class="card"><div id="descBox" class="small">Select service</div></div>
+</div>
 
-<input name="customer_name" placeholder="Name" required>
-<input name="phone" placeholder="Phone" required>
+<!-- DURATION -->
+<div class="section">
+<h3>Duration</h3>
+<div class="grid" id="durationBox">Select service first</div>
+</div>
 
-<select name="pax">
-<option>1</option><option>2</option><option>3</option>
-<option>4</option><option>5</option><option>6</option>
+<!-- DATE -->
+<div class="section">
+<h3>Date</h3>
+<input type="date" id="booking_date" name="booking_date" required>
+</div>
+
+<!-- TIME -->
+<div class="section">
+<h3>Time</h3>
+
+<div class="grid">
+<div class="card time-slot" data-time="15:00"><b>3:00 PM</b></div>
+<div class="card time-slot" data-time="16:00"><b>4:00 PM</b></div>
+<div class="card time-slot" data-time="17:00"><b>5:00 PM</b></div>
+<div class="card time-slot" data-time="18:00"><b>6:00 PM</b></div>
+<div class="card time-slot" data-time="19:00"><b>7:00 PM</b></div>
+</div>
+
+</div>
+
+<input type="hidden" id="booking_time" name="booking_time">
+
+<!-- THERAPIST -->
+<div class="section">
+<h3>Therapist (Optional)</h3>
+<select name="therapist" id="therapistBox" disabled>
+<option value="">Select date & time first</option>
 </select>
+</div>
+
+<!-- INFO -->
+<div class="section">
+<h3>Booking Info</h3>
+
+<input type="number" name="pax" value="1" max="6">
 
 <select name="payment_method">
 <option>Cash</option>
@@ -232,17 +201,9 @@ onclick="toggleAddon('<?= $ad['service_name'] ?>',<?= $ad['price'] ?>)">
 
 <textarea name="notes" placeholder="Notes"></textarea>
 
-<!-- ================= SCHEDULE ================= -->
-<h3>Schedule</h3>
+<button name="submit_booking">BOOK NOW</button>
 
-<input type="date" name="booking_date" required>
-
-<div class="item" onclick="setTime('15:00')">3 PM</div>
-<div class="item" onclick="setTime('16:00')">4 PM</div>
-<div class="item" onclick="setTime('17:00')">5 PM</div>
-<div class="item" onclick="setTime('18:00')">6 PM</div>
-
-<button type="submit" name="submit_booking">CONFIRM BOOKING</button>
+</div>
 
 </form>
 
@@ -250,74 +211,95 @@ onclick="toggleAddon('<?= $ad['service_name'] ?>',<?= $ad['price'] ?>)">
 
 <script>
 
-let addons = [];
-let addonTotal = 0;
-let basePrice = 0;
+/* SERVICE */
+function selectService(el,id,name,desc){
 
-/* ================= LOAD DURATIONS ================= */
-function loadDurations(service_id, name){
+document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
 
-document.getElementById("service_id").value = service_id;
-document.getElementById("service").value = name;
+service_id.value=id;
+service.value=name;
+descBox.innerText=desc;
 
-fetch("get_durations.php?service_id=" + service_id)
-.then(res => res.json())
-.then(data => {
+fetch('../get_duration.php?id='+id)
+.then(r=>r.json())
+.then(data=>{
 
-let html = "";
+let html='';
 
-data.forEach(d => {
-html += `
-<div class="item" onclick="selectDuration('${d.duration}',${d.price})">
-<b>${d.duration}</b>
-<small>₱${d.price}</small>
-</div>`;
+data.forEach(d=>{
+html += `<div class="card" onclick="selectDuration(this,'${d.duration}','${d.price}')">
+<b>${d.duration}</b><div class="small">₱${d.price}</div></div>`;
 });
 
-document.getElementById("durationBox").innerHTML = html;
+durationBox.innerHTML=html;
 
 });
 }
 
-/* ================= SELECT DURATION ================= */
-function selectDuration(duration, price){
-document.getElementById("duration").value = duration;
-basePrice = price;
-update();
+/* DURATION */
+function selectDuration(el,d,p){
+
+document.querySelectorAll('#durationBox .card')
+.forEach(c=>c.classList.remove('active'));
+
+el.classList.add('active');
+
+duration.value=d;
+price.value=p;
 }
 
-/* ================= PACKAGE ================= */
-function setPackage(name, price){
-document.getElementById("duration").value = name;
-basePrice = price;
-update();
-}
+/* TIME */
+document.querySelectorAll('.time-slot').forEach(el=>{
+el.onclick=()=>{
 
-/* ================= ADDONS ================= */
-function toggleAddon(name, price){
+document.querySelectorAll('.time-slot').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
 
-let i = addons.indexOf(name);
+booking_time.value = el.dataset.time;
 
-if(i === -1){
-addons.push(name);
-addonTotal += price;
-}else{
-addons.splice(i,1);
-addonTotal -= price;
-}
+loadTherapists();
 
-document.getElementById("addons").value = addons.join(", ");
-update();
-}
+};
+});
 
-/* ================= TIME ================= */
-function setTime(time){
-document.getElementById("booking_time").value = time;
-}
+/* DATE */
+document.getElementById('booking_date').addEventListener('change',function(){
+loadTherapists();
+});
 
-/* ================= PRICE UPDATE ================= */
-function update(){
-document.getElementById("price").value = basePrice + addonTotal;
+/* THERAPIST LOAD */
+function loadTherapists(){
+
+let date = document.getElementById('booking_date').value;
+let time = document.getElementById('booking_time').value;
+
+if(!date || !time) return;
+
+fetch('../get_available_therapists.php?date='+date+'&time='+time)
+.then(res=>res.json())
+.then(data=>{
+
+let select = document.getElementById('therapistBox');
+
+select.innerHTML = "";
+
+let def = document.createElement("option");
+def.value = "";
+def.text = "No Preference (Admin will assign)";
+select.appendChild(def);
+
+data.forEach(name=>{
+let opt = document.createElement("option");
+opt.value = name;
+opt.text = name;
+select.appendChild(opt);
+});
+
+select.disabled = false;
+
+});
+
 }
 
 </script>

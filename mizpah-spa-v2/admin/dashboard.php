@@ -7,9 +7,7 @@ if(!isset($_SESSION['user_id'])){
     exit;
 }
 
-/* =========================
-   BASIC COUNTS ONLY
-========================= */
+/* ================= COUNTS ================= */
 $bookings = mysqli_fetch_assoc(mysqli_query($conn,"
 SELECT COUNT(*) as total FROM bookings
 "))['total'] ?? 0;
@@ -26,7 +24,6 @@ $completed = mysqli_fetch_assoc(mysqli_query($conn,"
 SELECT COUNT(*) as total FROM bookings WHERE status='Completed'
 "))['total'] ?? 0;
 
-/* TODAY BOOKINGS */
 $today = date("Y-m-d");
 
 $todayBookings = mysqli_fetch_assoc(mysqli_query($conn,"
@@ -34,7 +31,6 @@ SELECT COUNT(*) as total FROM bookings
 WHERE booking_date='$today'
 "))['total'] ?? 0;
 
-/* SIMPLE REVENUE ONLY (NO BREAKDOWN) */
 $revenue = mysqli_fetch_assoc(mysqli_query($conn,"
 SELECT SUM(price * pax) as total
 FROM bookings
@@ -52,96 +48,136 @@ WHERE status='Completed'
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <style>
+
+/* ================= RESET ================= */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    outline:none !important;
+}
+
+/* ================= BODY (BLACK CLEAN THEME) ================= */
 body{
-background:#0b0b0b;
-color:#fff;
-font-family:Poppins;
+    font-family:Poppins,sans-serif;
+    color:#fff;
+    background:#0b0b0b;
+    overflow-x:hidden;
 }
 
+/* ================= MAIN ================= */
 .main{
-margin-left:250px;
-padding:35px;
-min-height:100vh;
+    margin-left:250px;
+    padding:35px;
+    min-height:100vh;
 }
 
+/* ================= HEADER ================= */
 .page-top{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:25px;
-flex-wrap:wrap;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+    flex-wrap:wrap;
 }
 
 .page-top h1{
-margin:0;
-color:#D6C29C;
-font-size:34px;
+    margin:0;
+    color:#D6C29C;
+    font-size:34px;
 }
 
 .page-top span{
-color:#aaa;
-font-size:14px;
+    color:#aaa;
+    font-size:14px;
 }
 
+/* ================= GLASS CARDS ================= */
 .cards{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:15px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
 }
 
 .card{
-background:#161616;
-padding:20px;
-border-radius:14px;
-border:1px solid #222;
+    background:rgba(255,255,255,0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:14px;
+    transition:0.2s;
+}
+
+.card:hover{
+    transform:translateY(-3px);
+    background:rgba(214,194,156,0.06);
 }
 
 .card h3{
-color:#D6C29C;
-font-size:13px;
-margin:0;
+    color:#D6C29C;
+    font-size:13px;
 }
 
 .card p{
-font-size:28px;
-margin-top:10px;
-font-weight:bold;
+    font-size:28px;
+    margin-top:10px;
+    font-weight:bold;
 }
 
+/* ================= QUICK PANEL ================= */
 .quick{
-margin-top:25px;
-background:#161616;
-padding:20px;
-border-radius:14px;
-border:1px solid #222;
+    margin-top:25px;
+    background:rgba(255,255,255,0.04);
+    backdrop-filter: blur(12px);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:14px;
 }
 
 .quick h2{
-color:#D6C29C;
-margin-bottom:15px;
+    color:#D6C29C;
+    margin-bottom:15px;
 }
 
 .item{
-display:flex;
-justify-content:space-between;
-padding:10px 0;
-border-bottom:1px solid #222;
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
 .item:last-child{
-border:none;
+    border:none;
 }
 
+/* ================= BUTTON ================= */
 .link{
-display:inline-block;
-margin-top:15px;
-padding:10px 15px;
-background:#D6C29C;
-color:#111;
-text-decoration:none;
-border-radius:10px;
-font-weight:bold;
+    display:inline-block;
+    margin-top:15px;
+    padding:10px 15px;
+    background:#D6C29C;
+    color:#111;
+    text-decoration:none;
+    border-radius:10px;
+    font-weight:bold;
+    transition:0.2s;
 }
+
+.link:hover{
+    opacity:0.85;
+}
+
+/* ================= REMOVE BLUE ================= */
+*{
+    -webkit-tap-highlight-color: transparent;
+}
+
+a{
+    color:inherit;
+    text-decoration:none;
+}
+
 </style>
 
 </head>
@@ -232,7 +268,6 @@ font-weight:bold;
 <strong>₱<?= number_format($revenue,0) ?></strong>
 </div>
 
-<!-- LINK TO REPORTS -->
 <a href="reports.php" class="link">View Sales Report →</a>
 
 </div>
