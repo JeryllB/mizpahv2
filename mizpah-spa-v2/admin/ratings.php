@@ -7,25 +7,48 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     exit;
 }
 
-/* =========================
-   HIDE REVIEW (SOFT DELETE)
-========================= */
+/* ================= HIDE ================= */
 if (isset($_GET['hide'])) {
-    $id = (int) $_GET['hide'];
+    $id = (int)$_GET['hide'];
 
     mysqli_query($conn, "
         UPDATE ratings 
-        SET status='hidden' 
-        WHERE id=$id
+        SET status='hidden'
+        WHERE id='$id'
     ");
 
     header("Location: ratings.php");
     exit;
 }
 
-/* =========================
-   FETCH REVIEWS
-========================= */
+/* ================= SHOW ================= */
+if (isset($_GET['show'])) {
+    $id = (int)$_GET['show'];
+
+    mysqli_query($conn, "
+        UPDATE ratings 
+        SET status='shown'
+        WHERE id='$id'
+    ");
+
+    header("Location: ratings.php");
+    exit;
+}
+
+/* ================= REMOVE ================= */
+if (isset($_GET['delete'])) {
+    $id = (int)$_GET['delete'];
+
+    mysqli_query($conn, "
+        DELETE FROM ratings
+        WHERE id='$id'
+    ");
+
+    header("Location: ratings.php");
+    exit;
+}
+
+/* ================= FETCH ================= */
 $query = mysqli_query($conn, "
     SELECT * FROM ratings
     ORDER BY id DESC
@@ -35,24 +58,51 @@ $query = mysqli_query($conn, "
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Ratings</title>
+<meta charset="UTF-8">
+<title>Ratings</title>
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <style>
-.hide-btn{
-    color:red;
-    font-weight:bold;
-    font-size:18px;
+body{
+    background:#0b0b0b;
+    color:#fff;
+    font-family:Poppins;
+}
+
+.main{
+    margin-left:250px;
+    padding:25px;
+}
+
+table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 10px;
+}
+
+tr{ background:#161616; }
+
+td,th{ padding:12px; }
+
+th{ color:#D6C29C; }
+
+.btn{
+    padding:6px 10px;
+    border-radius:6px;
     text-decoration:none;
-    cursor:pointer;
-    display:inline-block;
+    font-size:13px;
+    margin-right:5px;
 }
 
-.hide-btn:hover{
-    color:#ff6666;
-}
+.hide{ background:#3a1d1d; color:#ff6b6b; }
+.show{ background:#1d3325; color:#7dffaf; }
+.remove{ background:#3a0000; color:#ff4444; }
+
+.status-shown{ color:#7dffaf; font-weight:bold; }
+.status-hidden{ color:#ff9f43; font-weight:bold; }
+
+.stars{ color:#FFD700; }
 </style>
-
 </head>
 
 <body>
@@ -63,47 +113,49 @@ $query = mysqli_query($conn, "
 
 <h2>Customer Ratings</h2>
 
-<table border="1" cellpadding="10" cellspacing="0"
-style="width:100%; margin-top:20px; color:#fff;">
+<table>
 
 <tr>
-    <th>Name</th>
-    <th>Rating</th>
-    <th>Message</th>
-    <th>Date</th>
-    <th>Action</th>
+<th>Name</th>
+<th>Rating</th>
+<th>Message</th>
+<th>Status</th>
+<th>Action</th>
 </tr>
 
 <?php while($row = mysqli_fetch_assoc($query)){ ?>
 
 <tr>
-    <td><?= htmlspecialchars($row['name']) ?></td>
-    <td><?= str_repeat("★", (int)$row['rating']) ?></td>
-    <td><?= htmlspecialchars($row['message']) ?></td>
-    <td><?= $row['created_at'] ?></td>
 
-    <td>
-    <?php if($row['status'] == 'shown'){ ?>
+<td><?= htmlspecialchars($row['name']) ?></td>
 
-        <a href="ratings.php?hide=<?= $row['id'] ?>"
-           onclick="return confirm('Hide this review?')"
-           style="
-                color:red;
-                font-weight:bold;
-                font-size:20px;
-                text-decoration:none;
-                display:inline-block;
-                position:relative;
-                z-index:9999;
-           ">
-           ✖
-        </a>
+<td class="stars">
+<?= str_repeat("★",(int)$row['rating']) ?>
+</td>
 
-    <?php } else { ?>
+<td><?= htmlspecialchars($row['message']) ?></td>
 
-        <span style="color:gray;">Hidden</span>
+<td>
+<?php if($row['status']=='shown'){ ?>
+<span class="status-shown">Visible</span>
+<?php } else { ?>
+<span class="status-hidden">Hidden</span>
+<?php } ?>
+</td>
 
-    <?php } ?>
+<td>
+
+<?php if($row['status']=='shown'){ ?>
+<a class="btn hide" href="ratings.php?hide=<?= $row['id'] ?>">Hide</a>
+<?php } else { ?>
+<a class="btn show" href="ratings.php?show=<?= $row['id'] ?>">Show</a>
+<?php } ?>
+
+<a class="btn remove" href="ratings.php?delete=<?= $row['id'] ?>"
+onclick="return confirm('Remove review permanently?')">
+Remove
+</a>
+
 </td>
 
 </tr>

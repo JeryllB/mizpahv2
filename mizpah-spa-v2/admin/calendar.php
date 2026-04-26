@@ -2,44 +2,56 @@
 session_start();
 include '../includes/db.php';
 
+date_default_timezone_set('Asia/Manila');
+
 if(!isset($_SESSION['user_id'])){
 header("Location: ../login.php");
 exit;
 }
 
-/* ================= MONTH NAV ================= */
-$month = $_GET['month'] ?? date('m');
-$year  = $_GET['year'] ?? date('Y');
+$month = isset($_GET['month']) ? (int)$_GET['month'] : (int)date('m');
+$year  = isset($_GET['year']) ? (int)$_GET['year'] : (int)date('Y');
 
-$month = (int)$month;
-$year  = (int)$year;
+if ($month > 12) { $month = 1; $year++; }
+if ($month < 1) { $month = 12; $year--; }
 
 $firstDay = date('w', strtotime("$year-$month-01"));
-$days     = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+$days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
-/* ================= BOOKINGS ================= */
+$today = date("Y-m-d");
+
+/* BOOKINGS */
 $get = mysqli_query($conn,"
-SELECT customer_name, booking_date, booking_time, service
-FROM bookings
+SELECT b.id, b.customer_name, b.booking_date, b.booking_time, b.service, t.name as therapist
+FROM bookings b
+LEFT JOIN booking_therapists bt ON bt.booking_id = b.id
+LEFT JOIN therapists t ON t.id = bt.therapist_id
+WHERE b.status != 'Cancelled'
 ");
 
 $bookings = [];
+$calendar = [];
 
 while($row = mysqli_fetch_assoc($get)){
+
 $date = $row['booking_date'];
 
-if(!isset($bookings[$date])){
-$bookings[$date] = [];
-}
-
 $bookings[$date][] = $row;
+
+if(!isset($calendar[$date])){
+$calendar[$date] = [];
 }
 
-/* ================= STATUS ================= */
-function getStatus($count){
-if($count >= 8) return 'full';
-if($count > 0) return 'partial';
-return 'available';
+if($row['therapist']){
+$calendar[$date][$row['therapist']] = true;
+}
+}
+
+/* STATUS COLOR FUNCTION */
+function getStatusClass($count){
+if($count >= 7) return "full";      // RED
+if($count >= 3) return "partial";   // YELLOW
+return "available";                 // GREEN
 }
 ?>
 
@@ -48,26 +60,24 @@ return 'available';
 <head>
 <meta charset="UTF-8">
 <title>Calendar</title>
+
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <style>
 
-/* IMPORTANT FIX FOR SIDEBAR */
+body{
+margin:0;
+background:#0b0b0b;
+color:#fff;
+font-family:Poppins;
+}
+
 .main{
 margin-left:250px;
 padding:30px;
-background:#0b0b0b;
-min-height:100vh;
-color:#fff;
 }
 
-/* HEADER */
-h1{
-color:#D6C29C;
-margin-bottom:20px;
-}
-
-/* NAV MONTH */
+/* NAV */
 .nav{
 display:flex;
 justify-content:space-between;
@@ -77,16 +87,16 @@ margin-bottom:15px;
 
 .nav a{
 color:#D6C29C;
-text-decoration:none;
 font-weight:700;
+text-decoration:none;
 }
 
 /* CALENDAR */
 .calendar{
-background:#161616;
+background:rgba(255,255,255,0.04);
+border:1px solid rgba(255,255,255,0.08);
 padding:20px;
 border-radius:14px;
-border:1px solid rgba(214,194,156,.12);
 }
 
 table{
@@ -94,77 +104,93 @@ width:100%;
 border-spacing:8px;
 }
 
-th{
-color:#D6C29C;
-font-size:13px;
-padding:8px;
-}
-
 td{
-background:#1a1a1a;
-height:95px;
-border-radius:10px;
+height:100px;
+border-radius:12px;
 padding:8px;
 vertical-align:top;
 cursor:pointer;
-position:relative;
 transition:.2s;
+border:1px solid rgba(255,255,255,0.05);
+position:relative;
 }
 
+/* HOVER */
 td:hover{
-transform:scale(1.03);
+transform:scale(1.02);
 border:1px solid #D6C29C;
 }
 
+/* DAY NUMBER */
 .day{
+color:#D6C29C;
+font-weight:bold;
 font-size:13px;
-color:#fff;
+}
+
+/* TODAY */
+.today{
+border:1px solid #D6C29C !important;
+box-shadow:0 0 12px rgba(214,194,156,.3);
+}
+
+/* ================= COLOR STATES ================= */
+
+/* GREEN */
+.available{
+background:rgba(46,204,113,0.08);
+border-color:rgba(46,204,113,0.3);
+}
+
+/* YELLOW */
+.partial{
+background:rgba(241,196,15,0.08);
+border-color:rgba(241,196,15,0.3);
+}
+
+/* RED */
+.full{
+background:rgba(231,76,60,0.08);
+border-color:rgba(231,76,60,0.4);
+opacity:.85;
+}
+
+/* THERAPIST */
+.therapist{
+font-size:10px;
+display:block;
 opacity:.8;
+margin-top:3px;
+color:#aaa;
 }
 
-/* DOT INDICATOR */
-.dot{
-width:8px;
-height:8px;
-border-radius:50%;
-position:absolute;
-top:10px;
-right:10px;
+.count{
+font-size:11px;
+margin-top:5px;
+color:#D6C29C;
 }
-
-.available .dot{background:#2ecc71;}
-.partial .dot{background:#f1c40f;}
-.full .dot{background:#e74c3c;}
-
-/* STATUS BORDER */
-.available{border:1px solid rgba(46,204,113,.3);}
-.partial{border:1px solid rgba(241,196,15,.4);}
-.full{border:1px solid rgba(231,76,60,.4);opacity:.6;}
 
 /* MODAL */
 .modal{
 display:none;
 position:fixed;
 inset:0;
-background:rgba(0,0,0,.7);
-z-index:2000;
+background:rgba(0,0,0,.75);
 }
 
 .modal-content{
 background:#161616;
+width:420px;
 margin:8% auto;
 padding:20px;
-width:400px;
-border-radius:12px;
+border-radius:14px;
 border:1px solid rgba(214,194,156,.2);
-max-height:70vh;
-overflow:auto;
 }
 
 .close{
 float:right;
 cursor:pointer;
-font-size:20px;
+color:#D6C29C;
 }
 
 .item{
@@ -173,9 +199,7 @@ border-bottom:1px solid rgba(255,255,255,.05);
 font-size:13px;
 }
 
-.item strong{
-color:#D6C29C;
-}
+.item strong{color:#D6C29C;}
 
 </style>
 </head>
@@ -186,14 +210,16 @@ color:#D6C29C;
 
 <div class="main">
 
-<h1>Booking Calendar</h1>
+<h2 style="color:#D6C29C;">Booking Calendar</h2>
 
 <div class="nav">
+
 <a href="?month=<?= $month-1 ?>&year=<?= $year ?>">← Prev</a>
 
 <h3><?= date("F Y", strtotime("$year-$month-01")) ?></h3>
 
 <a href="?month=<?= $month+1 ?>&year=<?= $year ?>">Next →</a>
+
 </div>
 
 <div class="calendar">
@@ -219,14 +245,22 @@ for($d=1;$d<=$days;$d++){
 $date = "$year-".str_pad($month,2,'0',STR_PAD_LEFT)."-".str_pad($d,2,'0',STR_PAD_LEFT);
 
 $dayBookings = $bookings[$date] ?? [];
-$status = getStatus(count($dayBookings));
+$therapists = $calendar[$date] ?? [];
 
-echo "
-<td class='$status' onclick=\"openModal('$date')\">
-<div class='day'>$d</div>
-<span class='dot'></span>
-</td>
-";
+$class = getStatusClass(count($dayBookings));
+if($date == $today) $class .= " today";
+
+echo "<td class='$class' onclick=\"openModal('$date')\">";
+
+echo "<div class='day'>$d</div>";
+
+foreach($therapists as $name => $v){
+echo "<span class='therapist'>• $name</span>";
+}
+
+echo "<div class='count'>".count($dayBookings)." bookings</div>";
+
+echo "</td>";
 
 $count++;
 
@@ -271,7 +305,7 @@ let data = bookings[date] ?? [];
 
 let html = "";
 
-if(data.length === 0){
+if(data.length==0){
 html = "<p>No bookings</p>";
 }else{
 data.forEach(b=>{
@@ -279,7 +313,8 @@ html += `
 <div class="item">
 <strong>${b.customer_name}</strong><br>
 ${b.service}<br>
-${b.booking_time}
+${b.booking_time}<br>
+<small>${b.therapist ?? 'No therapist'}</small>
 </div>
 `;
 });
@@ -290,12 +325,6 @@ document.getElementById('list').innerHTML = html;
 
 function closeModal(){
 document.getElementById('modal').style.display='none';
-}
-
-window.onclick = function(e){
-if(e.target == document.getElementById('modal')){
-closeModal();
-}
 }
 
 </script>

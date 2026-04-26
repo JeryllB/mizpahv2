@@ -13,7 +13,8 @@ $totalSales = 0;
 $res = mysqli_query($conn,"
 SELECT SUM(price * pax) as total
 FROM bookings
-WHERE status='Completed'
+WHERE status IN ('Completed','Confirmed')
+AND price > 0
 ");
 
 if($res){
@@ -26,7 +27,8 @@ $payment = mysqli_query($conn,"
 SELECT payment_method,
 SUM(price * pax) as total
 FROM bookings
-WHERE status='Completed'
+WHERE status IN ('Completed','Confirmed')
+AND price > 0
 GROUP BY payment_method
 ");
 
@@ -34,12 +36,13 @@ GROUP BY payment_method
 $services = mysqli_query($conn,"
 SELECT service, COUNT(*) as total
 FROM bookings
+WHERE service != ''
 GROUP BY service
 ORDER BY total DESC
 LIMIT 5
 ");
 
-/* ================= DAILY ================= */
+/* ================= DAILY GRAPH ================= */
 $labels = [];
 $data = [];
 
@@ -47,14 +50,17 @@ $daily = mysqli_query($conn,"
 SELECT booking_date,
 SUM(price * pax) as total
 FROM bookings
-WHERE status='Completed'
+WHERE status IN ('Completed','Confirmed')
+AND price > 0
 GROUP BY booking_date
 ORDER BY booking_date ASC
 ");
 
-while($row=mysqli_fetch_assoc($daily)){
-    $labels[] = date("M d", strtotime($row['booking_date']));
-    $data[] = $row['total'];
+if($daily){
+    while($row=mysqli_fetch_assoc($daily)){
+        $labels[] = date("M d", strtotime($row['booking_date']));
+        $data[] = (float)$row['total'];
+    }
 }
 ?>
 
@@ -76,13 +82,13 @@ body{
     color:#fff;
 }
 
-/* IMPORTANT: DO NOT TOUCH SIDEBAR */
+/* SIDEBAR SAFE */
 .main{
     margin-left:250px;
     padding:25px;
 }
 
-/* SIMPLE GLASS */
+/* GLASS BLACK THEME */
 .card{
     background:#161616;
     border:1px solid #222;
@@ -97,20 +103,35 @@ body{
     gap:15px;
 }
 
-h2{color:#D6C29C;}
-.title{color:#D6C29C;font-size:14px;}
-.value{font-size:28px;font-weight:bold;}
+h2{
+    color:#D6C29C;
+    margin-bottom:15px;
+}
 
-p{color:#ddd;font-size:14px;}
+.title{
+    color:#D6C29C;
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.value{
+    font-size:28px;
+    font-weight:bold;
+}
+
+p{
+    color:#ddd;
+    font-size:14px;
+    margin:8px 0;
+}
 
 #chart{
-    width:100%!important;
-    height:300px!important;
+    width:100% !important;
+    height:320px !important;
 }
 </style>
 
 </head>
-
 <body>
 
 <?php include 'includes/sidebar.php'; ?>
@@ -119,6 +140,7 @@ p{color:#ddd;font-size:14px;}
 
 <h2>Sales Report</h2>
 
+<!-- TOTAL -->
 <div class="card">
     <div class="title">Total Revenue</div>
     <div class="value">₱<?= number_format($totalSales,2) ?></div>
@@ -126,26 +148,37 @@ p{color:#ddd;font-size:14px;}
 
 <div class="grid">
 
+<!-- PAYMENT -->
 <div class="card">
 <div class="title">Payment Breakdown</div>
 
-<?php while($p=mysqli_fetch_assoc($payment)): ?>
-<p><?= $p['payment_method'] ?> — ₱<?= number_format($p['total'],2) ?></p>
-<?php endwhile; ?>
+<?php if($payment && mysqli_num_rows($payment)>0): ?>
+    <?php while($p=mysqli_fetch_assoc($payment)): ?>
+        <p><?= $p['payment_method'] ?> — ₱<?= number_format($p['total'],2) ?></p>
+    <?php endwhile; ?>
+<?php else: ?>
+<p>No payment records</p>
+<?php endif; ?>
 
 </div>
 
+<!-- SERVICES -->
 <div class="card">
 <div class="title">Top Services</div>
 
-<?php while($s=mysqli_fetch_assoc($services)): ?>
-<p><?= $s['service'] ?> — <?= $s['total'] ?></p>
-<?php endwhile; ?>
+<?php if($services && mysqli_num_rows($services)>0): ?>
+    <?php while($s=mysqli_fetch_assoc($services)): ?>
+        <p><?= $s['service'] ?> — <?= $s['total'] ?> bookings</p>
+    <?php endwhile; ?>
+<?php else: ?>
+<p>No service records</p>
+<?php endif; ?>
 
 </div>
 
 </div>
 
+<!-- GRAPH -->
 <div class="card">
 <div class="title">Daily Sales</div>
 <canvas id="chart"></canvas>
@@ -157,29 +190,51 @@ p{color:#ddd;font-size:14px;}
 const labels = <?= json_encode($labels) ?>;
 const data = <?= json_encode($data) ?>;
 
-new Chart(document.getElementById("chart"),{
+const ctx = document.getElementById("chart");
+
+if(labels.length > 0 && data.length > 0){
+
+new Chart(ctx,{
     type:'line',
     data:{
         labels:labels,
         datasets:[{
-            label:'Sales',
+            label:'Sales ₱',
             data:data,
             borderColor:'#D6C29C',
-            backgroundColor:'rgba(214,194,156,0.15)',
+            backgroundColor:'rgba(214,194,156,0.12)',
             fill:true,
-            tension:0.4
+            tension:0.4,
+            borderWidth:2,
+            pointRadius:4,
+            pointHoverRadius:6
         }]
     },
     options:{
+        responsive:true,
+        maintainAspectRatio:false,
         plugins:{
-            legend:{labels:{color:'#fff'}}
+            legend:{
+                labels:{color:'#fff'}
+            }
         },
         scales:{
-            x:{ticks:{color:'#aaa'}},
-            y:{ticks:{color:'#aaa'},beginAtZero:true}
+            x:{
+                ticks:{color:'#aaa'},
+                grid:{color:'rgba(255,255,255,0.05)'}
+            },
+            y:{
+                beginAtZero:true,
+                ticks:{color:'#aaa'},
+                grid:{color:'rgba(255,255,255,0.05)'}
+            }
         }
     }
 });
+
+}else{
+    ctx.outerHTML = "<p style='color:#aaa;'>No sales data available for graph.</p>";
+}
 </script>
 
 </body>

@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-/* ================= DB (ROOT) ================= */
+/* ================= DB ================= */
 include __DIR__ . '/../includes/db.php';
 
 if(!isset($conn)){
@@ -27,7 +27,6 @@ VALUES ('$name','$desc','$category')
 
 $service_id = mysqli_insert_id($conn);
 
-/* durations */
 if(!empty($_POST['duration'])){
     foreach($_POST['duration'] as $i=>$dur){
 
@@ -47,7 +46,7 @@ echo "<script>alert('Service Added');window.location='services.php';</script>";
 exit;
 }
 
-/* ================= UPDATE SERVICE ================= */
+/* ================= UPDATE ================= */
 if(isset($_POST['update_service'])){
 
 $id       = (int)$_POST['id'];
@@ -63,7 +62,6 @@ category='$category'
 WHERE id='$id'
 ");
 
-/* delete old durations then reinsert (para walang duplicate) */
 mysqli_query($conn,"DELETE FROM service_durations WHERE service_id='$id'");
 
 if(!empty($_POST['duration'])){
@@ -85,7 +83,7 @@ echo "<script>alert('Updated');window.location='services.php';</script>";
 exit;
 }
 
-/* ================= GET DATA ================= */
+/* ================= DATA ================= */
 $services = mysqli_query($conn,"SELECT * FROM services ORDER BY id DESC");
 ?>
 
@@ -98,84 +96,135 @@ $services = mysqli_query($conn,"SELECT * FROM services ORDER BY id DESC");
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <style>
+
+/* ================= BASE ================= */
 body{
+margin:0;
+font-family:Poppins,sans-serif;
 background:#0b0b0b;
 color:#fff;
-font-family:Poppins;
 }
 
+/* ================= GLASS MAIN ================= */
 .main{
 margin-left:260px;
 padding:30px;
 }
 
+h2{
+color:#D6C29C;
+margin-bottom:20px;
+}
+
+/* ================= GLASS TABLE ================= */
 table{
 width:100%;
-border-collapse:collapse;
+border-collapse:separate;
+border-spacing:0 12px;
 }
 
-th,td{
-padding:12px;
-border-bottom:1px solid #222;
+tr{
+background:rgba(255,255,255,0.03);
+backdrop-filter:blur(8px);
+border:1px solid rgba(255,255,255,0.08);
 }
 
-th{color:#D6C29C;}
+td,th{
+padding:14px;
+}
 
+th{
+color:#D6C29C;
+font-weight:600;
+}
+
+/* ================= BUTTONS ================= */
 button{
-padding:6px 10px;
+padding:8px 12px;
 border:none;
-border-radius:6px;
+border-radius:8px;
 cursor:pointer;
+transition:.2s;
+}
+
+button:hover{
+transform:scale(1.03);
 }
 
 .addbtn{
-background:#1f3d2b;
-color:#7dffaf;
+background:#D6C29C;
+color:#111;
 margin-bottom:15px;
+font-weight:bold;
 }
 
 .editbtn{
-background:#D6C29C;
-color:#111;
+background:rgba(76,201,240,0.2);
+color:#4cc9f0;
+border:1px solid rgba(76,201,240,0.4);
 }
 
-/* MODAL */
+/* ================= MODAL GLASS ================= */
 .modal{
 display:none;
 position:fixed;
 inset:0;
-background:rgba(0,0,0,.7);
+background:rgba(0,0,0,0.6);
+backdrop-filter:blur(6px);
 }
 
 .modal-content{
-background:#161616;
-width:500px;
-margin:5% auto;
+background:rgba(22,22,22,0.9);
+backdrop-filter:blur(12px);
+border:1px solid rgba(255,255,255,0.08);
+width:520px;
+margin:6% auto;
 padding:20px;
-border-radius:10px;
+border-radius:14px;
+box-shadow:0 20px 60px rgba(0,0,0,0.6);
 }
 
+.modal-content h3{
+color:#D6C29C;
+}
+
+/* ================= INPUT GLASS ================= */
 input,textarea,select{
 width:100%;
 padding:10px;
 margin-bottom:10px;
-background:#0b0b0b;
+background:rgba(0,0,0,0.4);
 color:#fff;
-border:1px solid #333;
+border:1px solid rgba(255,255,255,0.1);
+border-radius:8px;
+outline:none;
 }
 
+input:focus,textarea:focus,select:focus{
+border-color:#D6C29C;
+}
+
+/* ================= ROW ================= */
 .addrow{
 display:flex;
 gap:10px;
 margin-bottom:8px;
 }
-.addrow input{flex:1;}
+
+.addrow input{
+flex:1;
+}
+
+/* ================= SMALL TEXT ================= */
+small{
+color:#aaa;
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- FIXED SIDEBAR PATH -->
 <?php include __DIR__.'/includes/sidebar.php'; ?>
 
 <div class="main">
@@ -198,10 +247,6 @@ margin-bottom:8px;
 
 <?php while($row=mysqli_fetch_assoc($services)): ?>
 
-<?php
-$dur = mysqli_query($conn,"SELECT * FROM service_durations WHERE service_id=".$row['id']);
-?>
-
 <tr>
 
 <td><?= htmlspecialchars($row['service_name']) ?></td>
@@ -209,7 +254,10 @@ $dur = mysqli_query($conn,"SELECT * FROM service_durations WHERE service_id=".$r
 <td><?= htmlspecialchars($row['description']) ?></td>
 
 <td>
-<?php while($d=mysqli_fetch_assoc($dur)): ?>
+<?php
+$dur = mysqli_query($conn,"SELECT * FROM service_durations WHERE service_id=".$row['id']);
+while($d=mysqli_fetch_assoc($dur)):
+?>
 ✔ <?= $d['duration'] ?> - ₱<?= $d['price'] ?><br>
 <?php endwhile; ?>
 </td>
@@ -245,12 +293,10 @@ $dur = mysqli_query($conn,"SELECT * FROM service_durations WHERE service_id=".$r
 <h4>Durations & Price</h4>
 
 <div id="wrap">
-
 <div class="addrow">
 <input name="duration[]" placeholder="e.g 1hr">
 <input name="price[]" placeholder="Price">
 </div>
-
 </div>
 
 <button type="button" onclick="addRow()">+ Add More</button>
@@ -331,12 +377,10 @@ document.getElementById('wrap').appendChild(div);
 }
 
 function openEdit(id,name,desc,cat){
-
 eid.value=id;
 ename.value=name;
 edesc.value=desc;
 ecat.value=cat;
-
 document.getElementById('editModal').style.display='block';
 }
 </script>

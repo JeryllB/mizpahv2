@@ -91,7 +91,7 @@ if(isset($_POST['login'])){
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mizpah Spa Login</title>
+<title>Mizpah Login</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -222,7 +222,7 @@ button:hover{
 
     <img src="assets/images/logo.png" class="login-logo">
 
-    <h2>Mizpah Spa</h2>
+    <h2>Mizpah Wellness Spa</h2>
     <div class="sub">Luxury Healing • Calm Experience</div>
 
     <?php if($error!=""){ ?>

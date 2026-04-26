@@ -2,11 +2,22 @@
 session_start();
 include '../includes/db.php';
 
-if(!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin'){
+/* ================= SECURITY CHECK ================= */
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
     header("Location: ../login.php");
     exit;
 }
 
+/* force lowercase role */
+$role = strtolower($_SESSION['role']);
+
+/* only admin allowed */
+if ($role !== 'admin') {
+    header("Location: ../login.php");
+    exit;
+}
+
+/* ================= FETCH USERS ================= */
 $query = mysqli_query($conn, "
     SELECT 
         u.id,
@@ -27,7 +38,45 @@ $query = mysqli_query($conn, "
 <html>
 <head>
 <title>Users</title>
+
 <link rel="stylesheet" href="../assets/css/admin.css">
+
+<style>
+body{
+    background:#0b0b0b;
+    color:#fff;
+    font-family:Poppins;
+}
+
+.main{
+    margin-left:250px;
+    padding:25px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid #222;
+}
+
+th{ color:#D6C29C; }
+
+/* ROLE COLORS */
+.role-admin{
+    color:#FFD700;
+    font-weight:bold;
+}
+
+.role-customer{
+    color:#4cc9f0;
+    font-weight:bold;
+}
+</style>
 </head>
 
 <body>
@@ -38,26 +87,35 @@ $query = mysqli_query($conn, "
 
 <h2>System Users</h2>
 
-<table border="1" cellpadding="10" cellspacing="0" style="width:100%; margin-top:20px; color:#fff;">
-    <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Total Bookings</th>
-        <th>Last Booking</th>
-        <th>Created</th>
-    </tr>
+<table>
 
-    <?php while($row = mysqli_fetch_assoc($query)){ ?>
-    <tr>
-        <td><?= htmlspecialchars($row['name']) ?></td>
-        <td><?= htmlspecialchars($row['email']) ?></td>
-        <td><?= $row['role'] ?></td>
-        <td><?= $row['total_bookings'] ?></td>
-        <td><?= $row['last_booking'] ?? 'No booking' ?></td>
-        <td><?= $row['created_at'] ?></td>
-    </tr>
-    <?php } ?>
+<tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Role</th>
+    <th>Total Bookings</th>
+    <th>Last Booking</th>
+    <th>Created</th>
+</tr>
+
+<?php while($row = mysqli_fetch_assoc($query)): ?>
+
+<?php
+$r = strtolower($row['role']);
+
+$class = ($r == 'admin') ? 'role-admin' : 'role-customer';
+?>
+
+<tr>
+    <td><?= htmlspecialchars($row['name']) ?></td>
+    <td><?= htmlspecialchars($row['email']) ?></td>
+    <td><span class="<?= $class ?>"><?= $r ?></span></td>
+    <td><?= $row['total_bookings'] ?></td>
+    <td><?= $row['last_booking'] ?? 'No booking' ?></td>
+    <td><?= $row['created_at'] ?></td>
+</tr>
+
+<?php endwhile; ?>
 
 </table>
 
