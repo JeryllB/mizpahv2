@@ -1,10 +1,39 @@
 <?php
-include 'includes/db.php';
+/* 🔥 FORCE SHOW ALL ERRORS (IMPORTANT) */
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
+/* 🔥 SAFE INCLUDE */
+if (!file_exists(__DIR__ . '/includes/db.php')) {
+die("ERROR: db.php not found in includes folder");
+}
+
+include __DIR__ . '/includes/db.php';
+
+/* 🔥 CHECK CONNECTION */
+if (!isset($conn) || !$conn) {
+die("ERROR: Database connection failed");
+}
+
+/* 🔥 GET ID */
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-$q = mysqli_query($conn,"SELECT * FROM bookings WHERE id='$id'");
+echo "<!-- DEBUG: ID = $id -->";
+
+/* 🔥 FETCH DATA */
+$data = null;
+
+if ($id > 0) {
+
+$q = mysqli_query($conn, "SELECT * FROM bookings WHERE id='$id' LIMIT 1");
+
+if (!$q) {
+die("SQL ERROR: " . mysqli_error($conn));
+}
+
 $data = mysqli_fetch_assoc($q);
+}
 ?>
 
 <!DOCTYPE html>
@@ -40,7 +69,7 @@ border:1px solid #2a2a2a;
 h1{
 text-align:center;
 color:#D6C29C;
-margin:0 0 10px;
+margin-bottom:10px;
 }
 
 .sub{
@@ -53,9 +82,9 @@ font-size:14px;
 .row{
 display:flex;
 justify-content:space-between;
-gap:15px;
 padding:12px 0;
 border-bottom:1px solid #222;
+font-size:13px;
 }
 
 .label{
@@ -82,7 +111,7 @@ border-radius:10px;
 .empty{
 text-align:center;
 color:#aaa;
-padding:20px 0;
+padding:20px;
 }
 </style>
 </head>
@@ -96,60 +125,17 @@ padding:20px 0;
 <h1>Booking Confirmed</h1>
 <div class="sub">Thank you for choosing Mizpah Wellness Spa</div>
 
-<div class="row">
-<div class="label">Booking ID</div>
-<div class="value"><?= $data['id'] ?></div>
-</div>
-
-<div class="row">
-<div class="label">Name</div>
-<div class="value"><?= htmlspecialchars($data['customer_name']) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Service</div>
-<div class="value"><?= htmlspecialchars($data['service']) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Duration</div>
-<div class="value"><?= htmlspecialchars($data['duration']) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Date</div>
-<div class="value"><?= htmlspecialchars($data['booking_date']) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Time</div>
-<div class="value"><?= htmlspecialchars($data['booking_time']) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Phone</div>
-<div class="value"><?= htmlspecialchars($data['phone']) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Pax</div>
-<div class="value"><?= htmlspecialchars($data['pax']) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Payment</div>
-<div class="value"><?= htmlspecialchars($data['payment_method']) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Total Price</div>
-<div class="value">₱<?= number_format($data['price'],2) ?></div>
-</div>
-
-<div class="row">
-<div class="label">Status</div>
-<div class="value"><?= htmlspecialchars($data['status']) ?></div>
-</div>
+<div class="row"><div class="label">Booking ID</div><div class="value"><?= $data['id'] ?></div></div>
+<div class="row"><div class="label">Name</div><div class="value"><?= htmlspecialchars($data['customer_name']) ?></div></div>
+<div class="row"><div class="label">Service</div><div class="value"><?= htmlspecialchars($data['service']) ?></div></div>
+<div class="row"><div class="label">Duration</div><div class="value"><?= htmlspecialchars($data['duration']) ?></div></div>
+<div class="row"><div class="label">Date</div><div class="value"><?= htmlspecialchars($data['booking_date']) ?></div></div>
+<div class="row"><div class="label">Time</div><div class="value"><?= htmlspecialchars($data['booking_time']) ?></div></div>
+<div class="row"><div class="label">Phone</div><div class="value"><?= htmlspecialchars($data['phone']) ?></div></div>
+<div class="row"><div class="label">Pax</div><div class="value"><?= htmlspecialchars($data['pax']) ?></div></div>
+<div class="row"><div class="label">Payment</div><div class="value"><?= htmlspecialchars($data['payment_method']) ?></div></div>
+<div class="row"><div class="label">Price</div><div class="value">₱<?= number_format($data['price'],2) ?></div></div>
+<div class="row"><div class="label">Status</div><div class="value"><?= htmlspecialchars($data['status']) ?></div></div>
 
 <?php if(!empty($data['notes'])): ?>
 <div class="row">
@@ -163,7 +149,11 @@ padding:20px 0;
 <?php else: ?>
 
 <h1>No Booking Found</h1>
-<div class="empty">Booking details unavailable.</div>
+<div class="empty">
+Invalid ID or no booking record found.<br>
+Check database insert.
+</div>
+
 <a href="index.php" class="btn">Back to Home</a>
 
 <?php endif; ?>
