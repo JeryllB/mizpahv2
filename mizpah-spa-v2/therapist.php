@@ -1,148 +1,236 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+session_start();
 include 'includes/db.php';
 
-/* SAFE CONNECTION CHECK */
-if(!isset($conn) || !$conn){
-die("Database connection failed");
-}
-
-/* GET ID SAFELY */
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-$data = null;
-
-if($id > 0){
-
-$q = mysqli_query($conn,"SELECT * FROM bookings WHERE id='$id' LIMIT 1");
-
-if(!$q){
-die("SQL ERROR: ".mysqli_error($conn));
-}
-
-$data = mysqli_fetch_assoc($q);
-}
+$therapists = mysqli_query($conn,"
+    SELECT * FROM therapists WHERE status='Active'
+");
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Booking Confirmed</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Therapists</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<!-- SAME FONTS AS LANDING -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
 body{
-margin:0;
-font-family:Poppins,sans-serif;
-background:#0b0b0b;
-color:#fff;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-padding:20px;
+    margin:0;
+    font-family:Poppins, sans-serif;
+    background:#0b0b0b;
+    color:#fff;
 }
 
-.box{
-width:100%;
-max-width:520px;
-background:#161616;
-padding:30px;
-border-radius:16px;
-border:1px solid #2a2a2a;
+/* HEADER (LIKE LANDING STYLE) */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 30px;
+    background:#111;
+    border-bottom:1px solid #222;
 }
 
-h1{
-text-align:center;
-color:#D6C29C;
-margin-bottom:10px;
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
 }
 
-.sub{
-text-align:center;
-color:#aaa;
-margin-bottom:25px;
-font-size:14px;
+.header-left img{
+    width:40px;
+    height:40px;
 }
 
-.row{
-display:flex;
-justify-content:space-between;
-padding:12px 0;
-border-bottom:1px solid #222;
-font-size:13px;
+.header-title{
+    font-family:'Playfair Display', serif;
+    font-size:20px;
+    color:#D6C29C;
+    font-weight:600;
 }
 
-.label{color:#D6C29C;font-weight:600;}
-.value{text-align:right;}
-
-.btn{
-display:block;
-margin-top:25px;
-text-align:center;
-padding:14px;
-background:#D6C29C;
-color:#111;
-text-decoration:none;
-font-weight:700;
-border-radius:10px;
+/* BACK BUTTON */
+.back-btn{
+    text-decoration:none;
+    color:#fff;
+    background:#222;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:13px;
+    transition:.2s;
 }
 
-.empty{
-text-align:center;
-color:#aaa;
-padding:20px;
+.back-btn:hover{
+    background:#D6C29C;
+    color:#111;
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:18px;
+    padding:25px;
+}
+
+/* CARD */
+.card{
+    background:#161616;
+    border:1px solid #222;
+    border-radius:16px;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    min-height:180px;
+    transition:.2s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+    border-color:#D6C29C;
+}
+
+.name{
+    font-family:'Playfair Display', serif;
+    font-size:18px;
+    font-weight:700;
+    color:#fff;
+}
+
+.info{
+    margin-top:6px;
+    font-size:13px;
+    color:#aaa;
+    line-height:1.4;
+}
+
+/* BUTTON */
+button{
+    background:#D6C29C;
+    border:none;
+    padding:9px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.2s;
+    font-family:Poppins;
+}
+
+button:hover{
+    background:#c9b08c;
+}
+
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.75);
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-box{
+    background:#161616;
+    padding:22px;
+    width:380px;
+    border-radius:14px;
+    border:1px solid #333;
+    font-family:Poppins;
+}
+
+.close{
+    float:right;
+    cursor:pointer;
+    color:#D6C29C;
+    font-weight:bold;
+    font-size:18px;
+}
+
+p{
+    margin:6px 0;
+    color:#ddd;
+    font-family:Poppins;
 }
 </style>
+
 </head>
 
 <body>
 
-<div class="box">
+<!-- HEADER -->
+<div class="header">
 
-<?php if($data): ?>
+    <div class="header-left">
+        <img src="assets/images/logo.png" alt="Logo">
+        <div class="header-title">Therapists</div>
+    </div>
 
-<h1>Booking Confirmed</h1>
-<div class="sub">Thank you for choosing Mizpah Wellness Spa</div>
-
-<div class="row"><div class="label">Booking ID</div><div class="value"><?= $data['id'] ?></div></div>
-<div class="row"><div class="label">Name</div><div class="value"><?= htmlspecialchars($data['customer_name']) ?></div></div>
-<div class="row"><div class="label">Service</div><div class="value"><?= htmlspecialchars($data['service']) ?></div></div>
-<div class="row"><div class="label">Duration</div><div class="value"><?= htmlspecialchars($data['duration']) ?></div></div>
-<div class="row"><div class="label">Date</div><div class="value"><?= htmlspecialchars($data['booking_date']) ?></div></div>
-<div class="row"><div class="label">Time</div><div class="value"><?= htmlspecialchars($data['booking_time']) ?></div></div>
-<div class="row"><div class="label">Phone</div><div class="value"><?= htmlspecialchars($data['phone']) ?></div></div>
-<div class="row"><div class="label">Pax</div><div class="value"><?= htmlspecialchars($data['pax']) ?></div></div>
-<div class="row"><div class="label">Payment</div><div class="value"><?= htmlspecialchars($data['payment_method']) ?></div></div>
-<div class="row"><div class="label">Price</div><div class="value">₱<?= number_format($data['price'],2) ?></div></div>
-<div class="row"><div class="label">Status</div><div class="value"><?= htmlspecialchars($data['status']) ?></div></div>
-
-<?php if(!empty($data['notes'])): ?>
-<div class="row">
-<div class="label">Notes</div>
-<div class="value"><?= htmlspecialchars($data['notes']) ?></div>
-</div>
-<?php endif; ?>
-
-<a href="index.php" class="btn">Back to Home</a>
-
-<?php else: ?>
-
-<h1>No Booking Found</h1>
-<div class="empty">
-Invalid booking ID or no data found.<br>
-Check if booking was saved properly.
-</div>
-
-<a href="index.php" class="btn">Back to Home</a>
-
-<?php endif; ?>
+    <a href="index.php" class="back-btn">← Back to Home</a>
 
 </div>
+
+<!-- GRID -->
+<div class="grid">
+
+<?php while($t=mysqli_fetch_assoc($therapists)): ?>
+
+<div class="card">
+
+    <div>
+        <div class="name"><?= $t['name'] ?></div>
+
+        <div class="info">
+            <?= $t['specialty'] ?><br>
+            <?= $t['best_service'] ?>
+        </div>
+    </div>
+
+    <div style="margin-top:15px;">
+        <button onclick="openModal(<?= $t['id'] ?>)">
+            View Ratings
+        </button>
+    </div>
+
+</div>
+
+<?php endwhile; ?>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+
+        <span class="close" onclick="closeModal()">×</span>
+
+        <h3 style="color:#D6C29C;margin-top:0;">Ratings</h3>
+
+        <div id="content">Loading...</div>
+
+    </div>
+</div>
+
+<script>
+function openModal(id){
+    document.getElementById("modal").style.display="flex";
+
+    fetch("rating_popup.php?id="+id)
+    .then(res=>res.text())
+    .then(data=>{
+        document.getElementById("content").innerHTML=data;
+    });
+}
+
+function closeModal(){
+    document.getElementById("modal").style.display="none";
+}
+</script>
 
 </body>
 </html>
