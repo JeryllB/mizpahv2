@@ -19,10 +19,10 @@ service_name
 <html>
 <head>
 
-<!-- FONTS -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 
 <style>
+
 body{
 margin:0;
 background:#0b0b0b;
@@ -30,21 +30,44 @@ color:#fff;
 font-family:Poppins;
 }
 
-/* HEADER */
+/* SUBTLE WARM BACKGROUND (NOT AI GLOW) */
+body::before{
+content:"";
+position:fixed;
+top:-150px;
+left:-150px;
+width:400px;
+height:400px;
+background:rgba(214,194,156,0.05);
+filter:blur(100px);
+z-index:-1;
+}
+
+body::after{
+content:"";
+position:fixed;
+bottom:-150px;
+right:-150px;
+width:400px;
+height:400px;
+background:rgba(255,255,255,0.03);
+filter:blur(120px);
+z-index:-1;
+}
+
+/* HEADER (CLEAN HOTEL STYLE) */
 .header{
 position:sticky;
 top:0;
 z-index:100;
-background:rgba(10,10,10,0.92);
-backdrop-filter: blur(10px);
-border-bottom:1px solid rgba(214,194,156,0.15);
+background:#0b0b0b;
+border-bottom:1px solid rgba(214,194,156,0.12);
 padding:12px 18px;
 display:flex;
 align-items:center;
 justify-content:space-between;
 }
 
-/* LOGO */
 .logo{
 display:flex;
 align-items:center;
@@ -52,10 +75,9 @@ gap:10px;
 }
 
 .logo img{
-width:42px;
-height:42px;
+width:40px;
+height:40px;
 object-fit:contain;
-border-radius:6px;
 }
 
 .logo span{
@@ -68,59 +90,58 @@ letter-spacing:1px;
 /* BACK BUTTON */
 .back-btn{
 text-decoration:none;
-color:#0b0b0b;
+color:#111;
 background:#D6C29C;
 padding:8px 14px;
-border-radius:8px;
+border-radius:6px;
 font-size:12px;
 font-weight:600;
 transition:0.3s;
 }
 
 .back-btn:hover{
-opacity:0.8;
+opacity:0.85;
 }
 
 /* TITLE */
 .page-title{
 text-align:center;
 color:#D6C29C;
-margin:25px 0 10px;
-font-size:24px;
+margin:30px 0 10px;
+font-size:26px;
 font-family:'Playfair Display', serif;
 }
 
-/* CATEGORY */
+/* CATEGORY (MINIMAL LUXURY BAR STYLE) */
 .category-title{
 max-width:800px;
 margin:40px auto 15px;
-padding:10px 15px;
-font-size:16px;
+padding:10px 14px;
+font-size:14px;
 font-weight:600;
 color:#D6C29C;
-border-left:4px solid #D6C29C;
-background:rgba(214,194,156,0.05);
-border-radius:6px;
+border-left:3px solid #D6C29C;
+background:rgba(214,194,156,0.04);
 }
 
-/* CARD */
+/* CARD (HOTEL STYLE CLEAN BOX) */
 .card{
 max-width:800px;
 margin:12px auto;
 padding:20px;
-background:rgba(255,255,255,0.03);
-border:1px solid rgba(214,194,156,0.12);
-border-radius:14px;
-transition:0.3s ease;
+background:#121212;
+border:1px solid rgba(255,255,255,0.06);
+border-radius:10px;
+transition:0.25s;
 }
 
 .card:hover{
-transform:translateY(-3px);
-border-color:rgba(214,194,156,0.35);
-box-shadow:0 10px 25px rgba(0,0,0,0.4);
+transform:translateY(-4px);
+border-color:rgba(214,194,156,0.25);
+box-shadow:0 10px 25px rgba(0,0,0,0.5);
 }
 
-/* SERVICE TITLE */
+/* TITLE */
 .title{
 font-size:18px;
 font-weight:600;
@@ -132,12 +153,12 @@ font-family:'Playfair Display', serif;
 /* DESCRIPTION */
 .desc{
 font-size:13px;
-color:#b5b5b5;
+color:#b8b8b8;
 line-height:1.6;
 margin-bottom:12px;
 }
 
-/* PRICE */
+/* PRICE AREA */
 .price-box{
 border-top:1px solid rgba(255,255,255,0.08);
 padding-top:10px;
@@ -154,6 +175,7 @@ font-weight:500;
 font-size:12px;
 color:#777;
 }
+
 </style>
 
 </head>
@@ -164,7 +186,7 @@ color:#777;
 <div class="header">
 
     <div class="logo">
-        <img src="assets/images/logo.png" alt="Mizpah Wellness Spa Logo">
+        <img src="assets/images/logo.png">
         <span>Mizpah Wellness Spa</span>
     </div>
 
