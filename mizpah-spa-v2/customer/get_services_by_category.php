@@ -1,21 +1,33 @@
 <?php
 include '../includes/db.php';
 
+/** @var mysqli $conn */
+
 header('Content-Type: application/json');
 
-$cat = isset($_GET['cat']) ? trim($_GET['cat']) : "";
+$cat = trim($_GET['cat'] ?? '');
 
-/* DEBUG SAFE QUERY */
-$q = mysqli_query($conn,"
-SELECT * FROM services 
-WHERE TRIM(category) = TRIM('$cat')
-ORDER BY service_name ASC
-");
-
+/* SAFE QUERY */
 $data = [];
 
-while($r = mysqli_fetch_assoc($q)){
-$data[] = $r;
+if ($cat !== '') {
+
+    $cat = mysqli_real_escape_string($conn, $cat);
+
+    $sql = "
+        SELECT *
+        FROM services
+        WHERE TRIM(category) = TRIM('$cat')
+        ORDER BY service_name ASC
+    ";
+
+    $q = mysqli_query($conn, $sql);
+
+    if ($q) {
+        while ($r = mysqli_fetch_assoc($q)) {
+            $data[] = $r;
+        }
+    }
 }
 
 echo json_encode($data);

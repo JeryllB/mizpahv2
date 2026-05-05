@@ -1,21 +1,40 @@
 <?php
 include '../includes/db.php';
 
-$date = $_GET['date'];
-$time = $_GET['time'];
+header('Content-Type: application/json');
 
-$q = mysqli_query($conn,"
-SELECT COUNT(*) as cnt 
+$date = $_GET['date'] ?? '';
+$time = $_GET['time'] ?? '';
+
+$date = mysqli_real_escape_string($conn, $date);
+$time = mysqli_real_escape_string($conn, $time);
+
+/* TOTAL SLOT LIMIT (beds capacity) */
+$limit = 4;
+
+$sql = "
+SELECT COUNT(*) AS cnt 
 FROM bookings 
-WHERE booking_date='$date' 
-AND booking_time='$time'
-");
+WHERE booking_date = '$date' 
+AND booking_time = '$time'
+AND status != 'Cancelled'
+";
+
+$q = mysqli_query($conn, $sql);
+
+if (!$q) {
+    echo json_encode([
+        'available' => false,
+        'remaining' => 0
+    ]);
+    exit;
+}
 
 $row = mysqli_fetch_assoc($q);
-
-$limit = 2; // slots per time
+$count = (int)($row['cnt'] ?? 0);
 
 echo json_encode([
-'available' => ($row['cnt'] < $limit),
-'remaining' => max(0, $limit - $row['cnt'])
+    'available' => ($count < $limit),
+    'remaining' => max(0, $limit - $count)
 ]);
+?>

@@ -18,7 +18,7 @@
 
 <div class="main">
   <h1>Admin Dashboard</h1>
-  <p>Welcome, Admin 👋</p>
+  <p>Welcome, Admin </p>
 </div>
 
 </body>

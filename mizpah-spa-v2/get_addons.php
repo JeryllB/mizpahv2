@@ -1,18 +1,26 @@
 <?php
 include __DIR__ . '/includes/db.php';
 
-$res = mysqli_query($conn,"
-SELECT id, service_name, description, price 
-FROM services 
-WHERE category='Add-ons'
-AND price IS NOT NULL
-");
+header('Content-Type: application/json');
 
 $data = [];
 
-while($row = mysqli_fetch_assoc($res)){
-    $data[] = $row;
+$sql = mysqli_query($conn, "
+SELECT id, service_name, description, price
+FROM services
+WHERE category = 'Add-ons'
+AND price IS NOT NULL
+");
+
+if ($sql) {
+while ($row = mysqli_fetch_assoc($sql)) {
+$data[] = [
+'id' => $row['id'],
+'service_name' => $row['service_name'],
+'description' => $row['description'],
+'price' => $row['price']
+];
+}
 }
 
-header('Content-Type: application/json');
 echo json_encode($data);

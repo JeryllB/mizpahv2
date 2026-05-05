@@ -313,13 +313,19 @@ Loading reviews...
 </section>
 
 <!-- FOOTER -->
+<!-- FOOTER -->
+<?php
+$setQ = mysqli_query($conn,"SELECT * FROM settings LIMIT 1");
+$set = mysqli_fetch_assoc($setQ);
+?>
+
 <footer class="footer">
 
 <div class="footer-grid">
 
 <div>
-<h3>Mizpah Wellness Spa</h3>
-<p>Your sanctuary for relaxation.</p>
+<h3><?= $set['site_name'] ?></h3>
+<p><?= $set['tagline'] ?></p>
 </div>
 
 <div>
@@ -331,14 +337,14 @@ Loading reviews...
 
 <div>
 <h4>Contact</h4>
-<p>0936-995-0038</p>
-<p>Kawit, Cavite</p>
+<p><?= $set['contact_number'] ?></p>
+<p><?= $set['address'] ?></p>
 </div>
 
 </div>
 
 <div class="footer-bottom">
-<p>© 2026 Mizpah Wellness Spa</p>
+<p><?= $set['copyright_text'] ?></p>
 </div>
 
 </footer>

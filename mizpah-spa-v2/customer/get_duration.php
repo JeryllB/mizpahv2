@@ -4,11 +4,6 @@ header('Content-Type: application/json');
 
 include '../includes/db.php';
 
-if(!isset($conn)){
-echo json_encode([]);
-exit;
-}
-
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if($id <= 0){
@@ -33,3 +28,4 @@ $data[] = [
 }
 
 echo json_encode($data);
+?>

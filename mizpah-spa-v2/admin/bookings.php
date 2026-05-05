@@ -46,7 +46,7 @@ function isTherapistAvailable($conn, $therapist_id, $date, $time, $duration)
     return true;
 }
 
-/* ================= AJAX ================= */
+/* ================= AJAX ASSIGN THERAPIST ================= */
 if (isset($_POST['ajax_assign'])) {
 
     $booking_id   = (int)$_POST['booking_id'];
@@ -60,7 +60,6 @@ if (isset($_POST['ajax_assign'])) {
         WHERE id='$booking_id'
     "));
 
-    /* TOGGLE REMOVE */
     $check = mysqli_query($conn,"
         SELECT id FROM booking_therapists
         WHERE booking_id='$booking_id'
@@ -77,7 +76,6 @@ if (isset($_POST['ajax_assign'])) {
         exit;
     }
 
-    /* PAX LIMIT */
     $count = mysqli_fetch_assoc(mysqli_query($conn,"
         SELECT COUNT(*) as total
         FROM booking_therapists
@@ -89,7 +87,6 @@ if (isset($_POST['ajax_assign'])) {
         exit;
     }
 
-    /* SMART CHECK */
     if (!isTherapistAvailable(
         $conn,
         $therapist_id,
@@ -112,7 +109,7 @@ if (isset($_POST['ajax_assign'])) {
     exit;
 }
 
-/* ================= STATUS ================= */
+/* ================= STATUS UPDATE ================= */
 if (isset($_POST['update_status'])) {
 
     $id = (int)$_POST['id'];
@@ -177,26 +174,6 @@ select{
     border:1px solid #333;
 }
 
-/* ROLE FIX */
-.role-customer{
-    color:#4cc9f0;
-    font-weight:bold;
-    padding:3px 8px;
-    border-radius:20px;
-    background:rgba(76,201,240,0.15);
-    font-size:11px;
-}
-
-.role-guest{
-    color:#ff9f43;
-    font-weight:bold;
-    padding:3px 8px;
-    border-radius:20px;
-    background:rgba(255,159,67,0.15);
-    font-size:11px;
-}
-
-/* BADGES */
 .badge{
     padding:4px 8px;
     border-radius:20px;
@@ -205,6 +182,11 @@ select{
 
 .ok{background:#22c55e;color:#000;}
 .none{background:#444;}
+
+.room-box{
+    font-size:12px;
+    color:#ddd;
+}
 </style>
 </head>
 
@@ -222,6 +204,7 @@ select{
 <th>Customer</th>
 <th>Service</th>
 <th>Schedule</th>
+<th>Room</th>
 <th>Therapists</th>
 <th>Pax</th>
 <th>Status</th>
@@ -233,20 +216,17 @@ select{
 
 <td>
 <b><?= $row['customer_name'] ?></b><br>
-
-<?php
-$roleClass = !empty($row['user_id']) ? 'role-customer' : 'role-guest';
-$roleText  = !empty($row['user_id']) ? 'Customer' : 'Guest';
-?>
-
-<span class="<?= $roleClass ?>">
-    <?= $roleText ?>
-</span>
+<small><?= $row['phone'] ?></small>
 </td>
 
 <td>
 <?= $row['service'] ?><br>
-<small><?= $row['duration'] ?></small>
+<small><?= $row['duration'] ?></small><br>
+
+<?php if(!empty($row['addons'])): ?>
+<small style="color:#aaa;">Addons: <?= $row['addons'] ?></small>
+<?php endif; ?>
+
 </td>
 
 <td>
@@ -254,6 +234,13 @@ $roleText  = !empty($row['user_id']) ? 'Customer' : 'Guest';
 <?= date("h:i A", strtotime($row['booking_time'])) ?>
 </td>
 
+<!-- ROOM FIXED -->
+<td class="room-box">
+Room: <b><?= $row['room_type'] ?? 'N/A' ?></b><br>
+Beds: <b><?= $row['beds'] ?? '1' ?></b>
+</td>
+
+<!-- THERAPISTS -->
 <td>
 
 <?php

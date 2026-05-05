@@ -6,29 +6,35 @@ header('Content-Type: application/json');
 $date = $_GET['date'] ?? '';
 $time = $_GET['time'] ?? '';
 
-if(!$date || !$time){
+if (!$date || !$time) {
 echo json_encode([]);
 exit;
 }
 
-/* AVAILABLE THERAPISTS */
-$sql = mysqli_query($conn,"
-SELECT t.name
-FROM therapists t
-WHERE t.id NOT IN (
-    SELECT bt.therapist_id
-    FROM booking_therapists bt
-    WHERE bt.booking_date = '$date'
-    AND bt.booking_time = '$time'
+$date = mysqli_real_escape_string($conn, $date);
+$time = mysqli_real_escape_string($conn, $time);
+
+$sql = "
+SELECT name
+FROM therapists
+WHERE status = 'Active'
+AND name NOT IN (
+SELECT therapist_id
+FROM bookings
+WHERE booking_date = '$date'
+AND booking_time = '$time'
+AND status != 'Cancelled'
 )
-ORDER BY t.name ASC
-");
+";
+
+$q = mysqli_query($conn, $sql);
 
 $data = [];
 
-while($row = mysqli_fetch_assoc($sql)){
+if ($q) {
+while ($row = mysqli_fetch_assoc($q)) {
 $data[] = $row['name'];
+}
 }
 
 echo json_encode($data);
-exit;

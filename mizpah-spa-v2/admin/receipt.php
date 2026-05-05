@@ -1,15 +1,19 @@
 <?php
 include '../includes/db.php';
 
-$id = $_GET['id'] ?? 0;
+$id = intval($_GET['id'] ?? 0);
 
-$query = mysqli_query($conn, "
-    SELECT * FROM bookings WHERE id=$id
-");
+/* SAFE QUERY (NO MULTILINE ISSUES) */
+$sql = "SELECT * FROM bookings WHERE id = $id";
+$query = mysqli_query($conn, $sql);
+
+if (!$query) {
+    die("Query Error: " . mysqli_error($conn));
+}
 
 $booking = mysqli_fetch_assoc($query);
 
-if(!$booking){
+if (!$booking) {
     echo "Booking not found";
     exit;
 }
@@ -22,9 +26,10 @@ if(!$booking){
 
 <style>
 body{
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background:#f5f2ee;
   padding:30px;
+  font-weight:300;
 }
 
 .receipt{
@@ -34,20 +39,39 @@ body{
   padding:20px;
   border-radius:10px;
   box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  font-weight:300;
 }
 
 h2{
   text-align:center;
   color:#3B2A22;
+  font-size:20px;
+  font-weight:400;
+  margin-bottom:5px;
+}
+
+.sub{
+  text-align:center;
+  font-size:12px;
+  margin-bottom:15px;
+  color:#555;
+  font-weight:300;
+}
+
+hr{
+  border:0;
+  border-top:1px solid #ddd;
+  margin:15px 0;
 }
 
 .row{
-  margin:10px 0;
-  font-size:14px;
+  margin:8px 0;
+  font-size:13px;
+  font-weight:300;
 }
 
 .label{
-  font-weight:bold;
+  font-weight:400;
   color:#4B2E2A;
 }
 
@@ -60,6 +84,11 @@ h2{
   border:none;
   border-radius:6px;
   cursor:pointer;
+  font-weight:400;
+}
+
+.print-btn:hover{
+  opacity:0.9;
 }
 
 @media print{
@@ -76,7 +105,7 @@ h2{
 <div class="receipt">
 
 <h2>Mizpah Wellness Spa</h2>
-<p style="text-align:center;">Booking Receipt</p>
+<div class="sub">Booking Receipt</div>
 
 <hr>
 

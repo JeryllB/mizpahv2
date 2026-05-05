@@ -1,12 +1,36 @@
 <?php
 include '../includes/db.php';
 
-$q = mysqli_query($conn,"SELECT name FROM therapists WHERE status='Active'");
+header('Content-Type: application/json');
+
+$date = $_GET['date'] ?? '';
+$time = $_GET['time'] ?? '';
+
+$date = $conn ? mysqli_real_escape_string($conn, $date) : $date;
+$time = $conn ? mysqli_real_escape_string($conn, $time) : $time;
+
+/* AVAILABLE THERAPISTS ONLY */
+$sql = "
+SELECT t.name
+FROM therapists t
+WHERE t.status='Active'
+AND t.name NOT IN (
+    SELECT therapist_id
+    FROM bookings
+    WHERE booking_date='$date'
+    AND booking_time='$time'
+    AND status != 'Cancelled'
+)
+";
+
+$q = mysqli_query($conn,$sql);
 
 $data = [];
 
+if($q){
 while($row = mysqli_fetch_assoc($q)){
 $data[] = $row['name'];
+}
 }
 
 echo json_encode($data);

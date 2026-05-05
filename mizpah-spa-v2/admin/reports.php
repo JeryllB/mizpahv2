@@ -7,39 +7,51 @@ if(!isset($_SESSION['user_id'])){
     exit;
 }
 
-/* ================= TOTAL SALES ================= */
-$totalSales = 0;
+/* ================= FILTERS ================= */
+$from   = $_GET['from'] ?? '';
+$to     = $_GET['to'] ?? '';
+$status = $_GET['status'] ?? '';
 
+$where = "WHERE status IN ('Completed','Confirmed') AND price > 0";
+
+if(!empty($from) && !empty($to)){
+    $where .= " AND booking_date BETWEEN '$from' AND '$to'";
+}
+
+if(!empty($status)){
+    $where .= " AND status = '$status'";
+}
+
+/* TOTAL SALES */
 $res = mysqli_query($conn,"
 SELECT IFNULL(SUM(price * pax),0) as total
 FROM bookings
-WHERE status IN ('Completed','Confirmed')
-AND price > 0
+$where
 ");
 
 $totalSales = mysqli_fetch_assoc($res)['total'] ?? 0;
 
-/* ================= PAYMENT BREAKDOWN ================= */
+/* PAYMENT */
 $payment = mysqli_query($conn,"
 SELECT payment_method,
 IFNULL(SUM(price * pax),0) as total
 FROM bookings
-WHERE status IN ('Completed','Confirmed')
-AND price > 0
+$where
 GROUP BY payment_method
 ");
 
-/* ================= TOP SERVICES ================= */
+/* SERVICES */
 $services = mysqli_query($conn,"
 SELECT service, COUNT(*) as total
 FROM bookings
-WHERE service != ''
+$where
+AND service != ''
 GROUP BY service
 ORDER BY total DESC
 LIMIT 5
 ");
 
-/* ================= DAILY SALES GRAPH ================= */
+/* GRAPH */
 $labels = [];
 $data = [];
 
@@ -47,19 +59,16 @@ $daily = mysqli_query($conn,"
 SELECT booking_date,
 IFNULL(SUM(price * pax),0) as total
 FROM bookings
-WHERE status IN ('Completed','Confirmed')
-AND price > 0
+$where
 GROUP BY booking_date
 ORDER BY booking_date ASC
 ");
 
 if($daily && mysqli_num_rows($daily) > 0){
-
     while($row = mysqli_fetch_assoc($daily)){
         $labels[] = date("M d", strtotime($row['booking_date']));
         $data[] = (float)$row['total'];
     }
-
 }else{
     $labels = ["No Data"];
     $data = [0];
@@ -79,9 +88,10 @@ if($daily && mysqli_num_rows($daily) > 0){
 <style>
 body{
 margin:0;
-font-family:Poppins;
+font-family:Poppins, sans-serif;
 background:#0b0b0b;
 color:#fff;
+font-weight:300;
 }
 
 .main{
@@ -105,28 +115,88 @@ gap:15px;
 
 h2{
 color:#D6C29C;
-margin-bottom:15px;
+font-size:26px;
+font-weight:500;
+margin-bottom:18px;
 }
 
 .title{
 color:#D6C29C;
-font-size:14px;
-margin-bottom:8px;
+font-size:17px;
+font-weight:500;
+margin-bottom:12px;
 }
 
 .value{
-font-size:28px;
-font-weight:bold;
+font-size:24px;
+font-weight:400;
 }
 
 p{
 color:#ddd;
-font-size:14px;
-margin:8px 0;
+font-size:12px;
+font-weight:300 !important;
+margin:7px 0;
 }
 
 .chart-box{
 height:320px;
+}
+
+/* ================= FILTER FIXED ALIGNMENT ================= */
+.filter-box{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+align-items:center;
+margin-bottom:15px;
+}
+
+/* equal height + clean look */
+.filter-box input,
+.filter-box select{
+padding:10px 12px;
+border-radius:8px;
+border:1px solid #333;
+background:#111;
+color:#fff;
+font-size:13px;
+min-height:38px;
+outline:none;
+}
+
+/* buttons aligned same height */
+.filter-box button{
+padding:10px 14px;
+border-radius:8px;
+border:none;
+background:#D6C29C;
+color:#111;
+font-weight:600;
+cursor:pointer;
+font-size:13px;
+min-height:38px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+/* print button */
+.print-btn{
+background:#444 !important;
+color:#fff !important;
+}
+
+/* mobile fix */
+@media(max-width:600px){
+.filter-box{
+flex-direction:column;
+align-items:stretch;
+}
+
+.filter-box button{
+width:100%;
+}
 }
 </style>
 </head>
@@ -138,6 +208,25 @@ height:320px;
 <div class="main">
 
 <h2>Sales Report</h2>
+
+<!-- FILTER -->
+<form method="GET" class="filter-box">
+
+    <input type="date" name="from" value="<?= $from ?>">
+    <input type="date" name="to" value="<?= $to ?>">
+
+    <select name="status">
+        <option value="">All Status</option>
+        <option value="Pending" <?= $status=='Pending'?'selected':'' ?>>Pending</option>
+        <option value="Confirmed" <?= $status=='Confirmed'?'selected':'' ?>>Confirmed</option>
+        <option value="Completed" <?= $status=='Completed'?'selected':'' ?>>Completed</option>
+    </select>
+
+    <button type="submit">Filter</button>
+
+    <button type="button" class="print-btn" onclick="window.print()">Print</button>
+
+</form>
 
 <!-- TOTAL -->
 <div class="card">
@@ -152,9 +241,9 @@ height:320px;
 <div class="title">Payment Breakdown</div>
 
 <?php if($payment && mysqli_num_rows($payment)>0): ?>
-    <?php while($p=mysqli_fetch_assoc($payment)): ?>
-        <p><?= $p['payment_method'] ?> — ₱<?= number_format($p['total'],2) ?></p>
-    <?php endwhile; ?>
+<?php while($p=mysqli_fetch_assoc($payment)): ?>
+<p><?= $p['payment_method'] ?> — ₱<?= number_format($p['total'],2) ?></p>
+<?php endwhile; ?>
 <?php else: ?>
 <p>No payment records</p>
 <?php endif; ?>
@@ -166,9 +255,9 @@ height:320px;
 <div class="title">Top Services</div>
 
 <?php if($services && mysqli_num_rows($services)>0): ?>
-    <?php while($s=mysqli_fetch_assoc($services)): ?>
-        <p><?= $s['service'] ?> — <?= $s['total'] ?> bookings</p>
-    <?php endwhile; ?>
+<?php while($s=mysqli_fetch_assoc($services)): ?>
+<p><?= $s['service'] ?> — <?= $s['total'] ?> bookings</p>
+<?php endwhile; ?>
 <?php else: ?>
 <p>No service records</p>
 <?php endif; ?>
@@ -203,16 +292,12 @@ backgroundColor:'rgba(214,194,156,0.12)',
 fill:true,
 tension:0.4,
 borderWidth:2,
-pointRadius:4
+pointRadius:3
 }]
 },
 options:{
 responsive:true,
-maintainAspectRatio:false,
-scales:{
-x:{ticks:{color:'#aaa'},grid:{color:'rgba(255,255,255,0.05)'}},
-y:{beginAtZero:true,ticks:{color:'#aaa'},grid:{color:'rgba(255,255,255,0.05)'}}
-}
+maintainAspectRatio:false
 }
 });
 </script>

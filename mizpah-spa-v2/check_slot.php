@@ -1,34 +1,48 @@
 <?php
-include 'includes/db.php';
+include __DIR__ . '/includes/db.php';
 
 header('Content-Type: application/json');
 
 $date = $_GET['date'] ?? '';
 $time = $_GET['time'] ?? '';
 
-if(!$date || !$time){
+if (!$date || !$time) {
 echo json_encode([
-"count" => 0,
-"available" => false,
-"remaining" => 6
+'available' => false,
+'remaining' => 0
 ]);
 exit;
 }
 
-$q = mysqli_query($conn,"
-SELECT COALESCE(SUM(pax),0) as total_pax
+$date = mysqli_real_escape_string($conn, $date);
+$time = mysqli_real_escape_string($conn, $time);
+
+/* ROOM CAPACITY (TOTAL BEDS = 4) */
+$limit = 4;
+
+/* COUNT BOOKINGS */
+$sql = "
+SELECT COUNT(*) AS cnt
 FROM bookings
-WHERE booking_date='$date'
-AND booking_time='$time'
-AND status!='Cancelled'
-");
+WHERE booking_date = '$date'
+AND booking_time = '$time'
+AND status != 'Cancelled'
+";
+
+$q = mysqli_query($conn, $sql);
+
+if (!$q) {
+echo json_encode([
+'available' => false,
+'remaining' => 0
+]);
+exit;
+}
 
 $row = mysqli_fetch_assoc($q);
-
-$total = (int)$row['total_pax'];
+$count = (int)($row['cnt'] ?? 0);
 
 echo json_encode([
-"count" => $total,
-"available" => $total < 6,
-"remaining" => max(0, 6 - $total)
+'available' => ($count < $limit),
+'remaining' => max(0, $limit - $count)
 ]);
